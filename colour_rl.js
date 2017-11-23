@@ -1,5 +1,23 @@
-function Entity(position, health, symbol) {
+function GameObject(position, has_collision, has_default_interaction) {
+    // Will the player trigger an action by trying to walk in that thing.
+    this.has_default_interaction = has_default_interaction;
     this.position = position;
+    this.has_collision = has_collision;
+}
+
+function Floor(symbol) {
+    GameObject.call(this, null, false, false);
+    this.symbol = symbol;
+}
+
+function Wall(symbol) {
+    GameObject.call(this, null, true, false);
+    this.symbol = symbol;
+}
+
+function Actor(position, health, symbol) {
+    // Actor has collision and default interaction
+    GameObject.call(this, position, true, true);
     this.health = health;
     this.symbol = symbol;
     this.move_delay = 10;
@@ -9,11 +27,16 @@ function Entity(position, health, symbol) {
         for (var i = 0; i < args.movement.length; i++) {
             new_pos.push(args.movement[i] + this.position[i]);
         }
-        // TODO: replace by isObstacle or whatever
-        if(check_collisions(args.map, new_pos)) {
-            return this.move_delay;
-        }
-        if (args.map.grid[new_pos[0]][new_pos[1]]) {
+
+        var collided = check_collisions(args.map, new_pos);
+
+        if(collided && collided.has_default_interaction) {
+            return collided.default_interaction(this);
+        } else if (collided) {
+            // collision with non interactable things are only permitted for players.
+            // we don't want to penalise a missinput so we return a null as a sign that nothing should happen
+            return null
+        } else if (args.map.grid[new_pos[0]][new_pos[1]]) {
             this.position = new_pos;
         }
         // 10 arbitrary units of time
@@ -22,32 +45,64 @@ function Entity(position, health, symbol) {
 }
 
 function NPC(position, health, symbol) {
-    Entity.call(this, position, health, symbol);
+    Actor.call(this, position, health, symbol);
     this.move_delay = 10;
     this.get_next_action = function() {
         return this.move({"map":map, movement:[1,0]});
     }
+
+    this.default_interaction = function(entity) {
+        return resolve_attack(entity, this);
+    }
+}
+
+function resolve_attack(attacker, attacked) {
+    // TODO: stats and all that bullshit
+    attacked.health -= 10;
+    console.log(attacked.health);
+    // TODO: change by attack delay
+    return attacker.move_delay
 }
 
 function check_collisions(map, new_pos) {
-    //Returns the thing it collides with if it collides
-    if (map.grid[new_pos[0]][new_pos[1]] === "#") {
-        return "#";
-    }
+    // If something is in the entities list, it takes precedence over map elements.
     for (var i = 0; i < map.entities.length; i++) {
         if(JSON.stringify(new_pos) === JSON.stringify(map.entities[i].position)) {
             return map.entities[i]
         }
     }
+    //Returns the thing it collides with if it collides
+    if (map.grid[new_pos[0]][new_pos[1]].has_collision) {
+        return map.grid[new_pos[0]][new_pos[1]];
+    }
     return false;
 }
 
-var map = {
-    grid:[['#','#','#','#','#'],['#','·','·','·','#'],['#','·','·','·','#'],['#','·','·','·','#'],['#','#','#','#','#']],
-    entities:[]
+var pre_grid = [['#','#','#','#','#'],['#','·','·','·','#'],['#','·','·','·','#'],['#','·','·','·','#'],['#','#','#','#','#']];
+
+var grid = [];
+for (var i = 0; i < pre_grid.length; i++) {
+    grid.push([]);
+    for (var j = 0; j < pre_grid[i].length; j++) {
+        if(pre_grid[i][j] === '#')
+            grid[i].push(new Wall('#'));
+        else
+            grid[i].push(new Floor('·'));
+    }
 }
 
-var player = new Entity([2,2], 100, "@");
+var map = {
+    "grid": grid,
+    entities:[],
+    //TODO: classify this thing
+    update_state: function() {
+        this.entities = this.entities.filter(function(entity) {
+            return entity.health > 0;
+        });
+    }
+}
+
+var player = new Actor([2,2], 100, "@");
 map.entities.push(player);
 var scheduler = new ROT.Scheduler.Action();
 
@@ -62,16 +117,21 @@ function game_loop() {
         if(next_player_action.name === "") {
             return;
         }
-        scheduler.setDuration(player[next_player_action.name](next_player_action.args));
-        console.log(scheduler._duration);
+        var duration = player[next_player_action.name](next_player_action.args);
+        // null means invalid action
+        if (duration === null) {
+            next_player_action.name = "";
+            return;
+        }
+        scheduler.setDuration(duration);
         next_player_action.name = "";
         current_actor = scheduler.next();
     } else {
         scheduler.setDuration(current_actor.get_next_action());
-        console.log(scheduler._duration);
         current_actor = scheduler.next();
     }
     update_display();
+    map.update_state();
 }
 
 function init_game() {
@@ -82,7 +142,7 @@ function init_game() {
     scheduler.add(ennemy, true, 1);
     current_actor = scheduler.next();
     // wooow, a game loop.
-    setInterval(game_loop, 50);
+    setInterval(game_loop, 5);
 }
 
 init_game();
@@ -95,7 +155,7 @@ $(document).ready(function($) {
     update_display = function () {
         for (var i = 0; i < map.grid.length; i++) {
             for (var j = 0; j < map.grid[i].length; j++) {
-                display.draw(i+2, j+3, map.grid[i][j]);
+                display.draw(i+2, j+3, map.grid[i][j].symbol);
             }
         }
         for (var i = 0; i < map.entities.length; i++) {

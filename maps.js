@@ -7,6 +7,7 @@ function Map() {
             return entity.health > 0;
         });
     }
+    this.scheduler = new ROT.Scheduler.Action();
 }
 
 function get_layout_from_rot_generator(rot_generator, num_calls) {
@@ -17,7 +18,7 @@ function get_layout_from_rot_generator(rot_generator, num_calls) {
     }
     for (var i = 0; i < num_calls; i++) {
         rot_generator.create(function(x, y, wall) {
-            if(!wall) {
+            if(wall) {
                 grid[x][y] = new Wall("#");
             } else {
                 grid[x][y] = new Floor("·");
@@ -42,7 +43,9 @@ function check_collisions(map, new_pos) {
     return false;
 }
 
-var rgen = new ROT.Map.Cellular(60, 30);
-rgen.randomize(0.5);
+// var rgen = new ROT.Map.Cellular(60, 30);
+// rgen.randomize(0.5);
 
-grid = get_layout_from_rot_generator(rgen,2);
+// grid = get_layout_from_rot_generator(rgen,2);
+
+grid = get_layout_from_rot_generator(new ROT.Map.Arena(60,30));

@@ -1,6 +1,6 @@
 function Game() {
     this.player = null;
-    this.scheduler = new ROT.Scheduler.Action();
+    this.current_scheduler = null;
     this.current_map = new Map(grid);
     // action that should be called. This is basically the controller.
     this.next_player_action = {name:"", args:{}};
@@ -9,15 +9,18 @@ function Game() {
     this.current_actor = null;
 
     this.init = function() {
+        this.current_scheduler = this.current_map.scheduler;
         this.player = new Actor([2,2], 100, "@");
         ennemy = new NPC([1,1], 21, "e");
         this.current_map.entities.push(this.player);
         this.current_map.entities.push(ennemy);
-        this.scheduler.add("player", true, 0);
-        this.scheduler.add(ennemy, true, 1);
-        this.current_actor = this.scheduler.next();
+        this.current_scheduler.add("player", true, 0);
+        this.current_scheduler.add(ennemy, true, 1);
+        this.current_actor = this.current_scheduler.next();
     }
 }
+
+var message_log = [];
 
 var game = new Game();
 
@@ -32,13 +35,13 @@ function game_loop() {
             game.next_player_action.name = "";
             return;
         }
-        game.scheduler.setDuration(duration);
+        game.current_scheduler.setDuration(duration);
         game.next_player_action.name = "";
-        game.current_actor = game.scheduler.next();
+        game.current_actor = game.current_scheduler.next();
     } else {
         var duration = game.current_actor.get_next_action()
-        game.scheduler.setDuration(duration);
-        game.current_actor = game.scheduler.next();
+        game.current_scheduler.setDuration(duration);
+        game.current_actor = game.current_scheduler.next();
     }
     update_display();
     game.current_map.update_state();

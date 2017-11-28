@@ -6,10 +6,26 @@ function view() {
     //vue
     var status_colors = new Rainbow();
     status_colors.setSpectrum("red", "yellow", "green");
-
+    var log_len = 6;
+    var log_start_pos = 15;
+    var max_message_len = 20;
     function print_logs() {
-        for (var i = message_log.length - 1; i >= message_log.length - 5; i--) {
+        var line_skips = 0;
+        for (var i = 0; i + line_skips < log_len; i++) {
+            if (message_log[message_log.length - i]) {
+                // floor since we already ++ it whatever the len
+                var message = message_log[message_log.length - i];
 
+                var msg_line_len = Math.floor(message.length / max_message_len);
+                // If we don't have enough lines, we simply don't display the message.
+                // Could be problematic for very long messages
+                console.log(message + " " + (msg_line_len + i));
+                if (msg_line_len + i + line_skips < log_len) {
+                    sidebar_display.drawText(0, log_start_pos - i - msg_line_len - line_skips, message, 20);
+                }
+
+                line_skips += msg_line_len;
+            }
         }
     }
 
@@ -22,6 +38,9 @@ function view() {
         for (var i = 0; i < game.current_map.entities.length; i++) {
             map_display.draw(game.current_map.entities[i].position[0]+map_x_offset, game.current_map.entities[i].position[1]+map_y_offset, game.current_map.entities[i].symbol);
         }
+
+        sidebar_display.clear();
+
         sidebar_display.drawText(0, 3, "health");
         sidebar_display.draw(3 ,4,'❤', "#"+status_colors.colourAt(game.player.health));
 
@@ -59,7 +78,7 @@ function view() {
     var map_display = new ROT.Display(map_options);
 
     var sidebar_options = {
-        width: 15,
+        width: 22,
         height: map_height + map_y_offset + 2,
         fontSize: 14,
         forceSquareRatio:false,

@@ -20,7 +20,7 @@ function Game() {
     }
 }
 
-var message_log = [];
+var message_log = ["Welcome to colour_rlfrf"];
 
 var game = new Game();
 

@@ -1,11 +1,18 @@
-function Map() {
+function Map(grid) {
     this.grid = grid;
-
+    // size in x and y
+    this.dimensions = [grid.length, grid[0].length];
     this.entities = [];
     this.update_state = function() {
-        this.entities = this.entities.filter(function(entity) {
-            return entity.health > 0;
-        });
+        var alive = [];
+        for (var i = 0; i < this.entities.length; i++) {
+            if (this.entities[i].health > 0) {
+                alive.push(this.entities[i]);
+            } else {
+                this.scheduler.remove(this.entities[i]);
+            }
+        }
+        this.entities = alive;
     }
     this.scheduler = new ROT.Scheduler.Action();
 }
@@ -48,4 +55,4 @@ function check_collisions(map, new_pos) {
 
 // grid = get_layout_from_rot_generator(rgen,2);
 
-grid = get_layout_from_rot_generator(new ROT.Map.Arena(60,30));
+grid = get_layout_from_rot_generator(new ROT.Map.Arena(60,31));

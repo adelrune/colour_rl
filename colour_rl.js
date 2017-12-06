@@ -7,11 +7,12 @@ function Game() {
     // This is the lock used to know if we are waiting for user input to continue
     this.waiting_for_player = true;
     this.current_actor = null;
-
+    this.focus = null;
     this.init = function() {
         this.current_scheduler = this.current_map.scheduler;
-        this.player = new Actor([2,2], 100, "@");
-        ennemy = new NPC([1,1], 21, "e");
+        this.player = new Actor([2,2], 100, "@", "player");
+        this.focus = this.player;
+        ennemy = new NPC([1,1], 21, "e", "ennemy");
         this.current_map.entities.push(this.player);
         this.current_map.entities.push(ennemy);
         this.current_scheduler.add("player", true, 0);
@@ -20,7 +21,7 @@ function Game() {
     }
 }
 
-var message_log = ["Welcome to colour_rlfrf"];
+var message_log = ["Welcome to colour_rl"];
 
 var game = new Game();
 

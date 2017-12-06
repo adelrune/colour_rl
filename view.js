@@ -1,8 +1,7 @@
 function view() {
-    var map_width = 60;
-    var map_height = 30;
-    var map_x_offset = 2;
-    var map_y_offset = 2
+    var camera_size = [30,30];
+    var screen_offset = [2,2];
+    var camera_corner = [0,0];
     //vue
     var status_colors = new Rainbow();
     status_colors.setSpectrum("red", "yellow", "green");
@@ -19,7 +18,6 @@ function view() {
                 var msg_line_len = Math.floor(message.length / max_message_len);
                 // If we don't have enough lines, we simply don't display the message.
                 // Could be problematic for very long messages
-                console.log(message + " " + (msg_line_len + i));
                 if (msg_line_len + i + line_skips < log_len) {
                     sidebar_display.drawText(0, log_start_pos - i - msg_line_len - line_skips, message, 20);
                 }
@@ -28,15 +26,48 @@ function view() {
             }
         }
     }
-
+    function position_in_view(position) {
+        var in_view = true;
+        for (var i = 0; i < 2; i++) {
+            // is it in view for the other dimensions and is it inside the bounds of the camera.
+            in_view = in_view && (position[i] >= camera_corner[i] && position[i] <= camera_corner[i] + camera_size[i]);
+        }
+        return in_view;
+    }
+    function get_camera_top_left_corner() {
+        var pos = [];
+        for (var i = 0; i < 2; i++) {
+            pos[i] = Math.floor(game.focus.position[i] - (camera_size[i] / 2));
+            // if the corner gets out of the map, we bring it back.
+            if (pos[i] + camera_size[i] > game.current_map.dimensions[i]) {
+                pos[i] = game.current_map.dimensions[i] - camera_size[i];
+            }
+            // if its negative, we bring it to 0.
+            if (pos[i] < 0) {
+                pos[i] = 0;
+            }
+        }
+        return pos;
+    }
     update_display = function () {
-        for (var i = 0; i < game.current_map.grid.length; i++) {
-            for (var j = 0; j < game.current_map.grid[i].length; j++) {
-                map_display.draw(i+map_x_offset, j+map_y_offset, game.current_map.grid[i][j].symbol);
+        camera_corner = get_camera_top_left_corner();
+        for (var i = camera_corner[0]; i < camera_corner[0] + camera_size[0]; i++) {
+            for (var j = camera_corner[1]; j < camera_corner[1] + camera_size[1]; j++) {
+                map_display.draw(
+                    i - camera_corner[0] + screen_offset[0],
+                    j - camera_corner[1] + screen_offset[1],
+                    game.current_map.grid[i][j].symbol
+                );
             }
         }
         for (var i = 0; i < game.current_map.entities.length; i++) {
-            map_display.draw(game.current_map.entities[i].position[0]+map_x_offset, game.current_map.entities[i].position[1]+map_y_offset, game.current_map.entities[i].symbol);
+            if (position_in_view(game.current_map.entities[i].position)) {
+                map_display.draw(
+                    game.current_map.entities[i].position[0] - camera_corner[0] + screen_offset[0],
+                    game.current_map.entities[i].position[1] - camera_corner[1] + screen_offset[1],
+                    game.current_map.entities[i].symbol
+                );
+            }
         }
 
         sidebar_display.clear();
@@ -70,8 +101,8 @@ function view() {
 
 
     var map_options = {
-        width: map_width + map_x_offset + 2,
-        height: map_height + map_y_offset + 2,
+        width: camera_size[0] + screen_offset[0] + 2,
+        height: camera_size[1] + screen_offset[1] + 2,
         fontSize: 14,
         forceSquareRatio:true,
     }
@@ -79,7 +110,7 @@ function view() {
 
     var sidebar_options = {
         width: 22,
-        height: map_height + map_y_offset + 2,
+        height: camera_size[1] + screen_offset[1] + 2,
         fontSize: 14,
         forceSquareRatio:false,
     }

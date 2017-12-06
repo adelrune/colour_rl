@@ -30,7 +30,7 @@ function view() {
         var in_view = true;
         for (var i = 0; i < 2; i++) {
             // is it in view for the other dimensions and is it inside the bounds of the camera.
-            in_view = in_view && (position[i] >= camera_corner[i] && position[i] <= camera_corner[i] + camera_size[i]);
+            in_view = in_view && (position[i] >= camera_corner[i] && position[i] < camera_corner[i] + camera_size[i]);
         }
         return in_view;
     }

@@ -3,11 +3,36 @@ function Map(grid) {
     // size in x and y
     this.dimensions = [grid.length, grid[0].length];
     this.entities = [];
+    // javascriiiiiiiipt
+    var that = this;
+    this.fov = new ROT.FOV.PreciseShadowcasting(function(x, y) {
+        return that.grid[x] && that.grid[x][y] ? that.grid[x][y].light_passes() : false;
+    });
+    this.get_entity_square = function(entity) {
+        return this.grid[entity.position[0]][entity.position[1]];
+    }
     this.update_state = function() {
+        // Resets visibility states
+        for (var i = 0; i < that.grid.length; i++) {
+            for (var j = 0; j < that.grid[i].length; j++) {
+                that.grid[i][j].visible = false;
+            }
+        }
+        this.fov.compute(game.player.position[0], game.player.position[1], 15, function(x, y) {
+            console.log([x,y]);
+            if (typeof(that.grid[x]) !== "undefined" && typeof(that.grid[x][y]) !== "undefined") {
+                that.grid[x][y].set_visible();
+            }
+        });
+        console.log("aaaa");
         var alive = [];
         for (var i = 0; i < this.entities.length; i++) {
             if (this.entities[i].health > 0) {
                 alive.push(this.entities[i]);
+                this.entities[i].visible = false;
+                if (this.get_entity_square(this.entities[i]).visible) {
+                    this.entities[i].set_visible();
+                }
             } else {
                 this.scheduler.remove(this.entities[i]);
             }
@@ -32,7 +57,6 @@ function get_layout_from_rot_generator(rot_generator, num_calls) {
             }
         });
     }
-
     return grid;
 }
 

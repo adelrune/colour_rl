@@ -18,6 +18,8 @@ function Game() {
         this.current_scheduler.add("player", true, 0);
         this.current_scheduler.add(ennemy, true, 1);
         this.current_actor = this.current_scheduler.next();
+
+        this.current_map.update_state();
     }
 }
 

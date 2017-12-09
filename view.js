@@ -21,8 +21,8 @@ function add_colours(col1, col2) {
     var col = [];
     for (var i=0; i<3; i++) {
         col[i] = col1[i] + col2[i];
-        col[i] = col[i] < 0 ? 0;
-        col[i] = col[i] > 255 ? 255;
+        col[i] = col[i] < 0 ? 0 : col[i];
+        col[i] = col[i] > 255 ? 255 : col[i];
     }
     return col;
 }
@@ -82,12 +82,15 @@ function view() {
     function draw_game_object(entity, x, y) {
         var repr = {"symbol":"", "colour":"#FFFFFF"};
         if (entity.visible) {
-            repr = entity.repr
-        } else {
+            repr = entity.repr;
+        } else if (entity.remembered_as != null) {
             repr.symbol = entity.remembered_as.symbol;
-            repr.colour = rgb_to_hex(add_colours(entity.remembered_as.colour, [-40,-40,-40]));
+            repr.colour = add_colours(entity.remembered_as.colour, [-150,-150,-150]);
+        } else if (entity.remembered_as == null) {
+            // Do nothing if its not remembered and its not visible.
+            return
         }
-        map_display.draw(x, y, repr.symbol, repr.colour);
+        map_display.draw(x, y, repr["symbol"], rgb_to_hex(repr.colour));
     }
 
     update_display = function () {
@@ -95,6 +98,12 @@ function view() {
         // map tiles
         for (var i = camera_corner[0]; i < camera_corner[0] + camera_size[0]; i++) {
             for (var j = camera_corner[1]; j < camera_corner[1] + camera_size[1]; j++) {
+                // resets dislay
+                map_display.draw(
+                    i - camera_corner[0] + screen_offset[0],
+                    j - camera_corner[1] + screen_offset[1],
+                    ""
+                );
                 draw_game_object(
                     game.current_map.grid[i][j],
                     i - camera_corner[0] + screen_offset[0],

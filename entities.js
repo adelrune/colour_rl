@@ -8,16 +8,19 @@ function GameObject(position, has_collision, has_default_interaction, repr) {
     this.visible = false;
     // repr this was last seen as
     this.remembered_as = null;
-    //
     this.repr = repr;
     if (typeof(this.repr) === "string") {
         // If no colour is set, its white.
-        this.repr = {"symbol":"repr", "colour":[255,255,255]}
+        this.repr = {"symbol":this.repr, "colour":[255,255,255]}
+    }
+    this.light_passes = function() {
+        return ! this.has_collision;
     }
     // deals with remembered_as and visible.
     this.set_visible = function() {
         this.visible = true;
-        this.remembered_as = this.repr;
+        // We don't remember things that aren't persistent
+        this.remembered_as = this.persistent_memory ? this.repr : null;
     }
 }
 

@@ -55,4 +55,4 @@ function check_collisions(map, new_pos) {
 
 // grid = get_layout_from_rot_generator(rgen,2);
 
-grid = get_layout_from_rot_generator(new ROT.Map.Arena(60,31));
+grid = get_layout_from_rot_generator(new ROT.Map.EllerMaze(60,31));

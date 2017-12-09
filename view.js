@@ -1,3 +1,32 @@
+// colour helpers (thx stackoverflow)
+function comp_to_hex(c) {
+    var hex = c.toString(16);
+    return hex.length == 1 ? "0" + hex : hex;
+}
+
+function rgb_to_hex(rgb) {
+    return "#" + comp_to_hex(rgb[0]) + comp_to_hex(rgb[1]) + comp_to_hex(rgb[2]);
+}
+
+function hex_to_rgb(hex) {
+    hex = hex.replace("#", "");
+    var bigint = parseInt(hex, 16);
+    var r = (bigint >> 16) & 255;
+    var g = (bigint >> 8) & 255;
+    var b = bigint & 255;
+    return [r,g,b];
+}
+
+function add_colours(col1, col2) {
+    var col = [];
+    for (var i=0; i<3; i++) {
+        col[i] = col1[i] + col2[i];
+        col[i] = col[i] < 0 ? 0;
+        col[i] = col[i] > 255 ? 255;
+    }
+    return col;
+}
+
 function view() {
     var camera_size = [30,30];
     var screen_offset = [2,2];
@@ -35,7 +64,7 @@ function view() {
         return in_view;
     }
     function get_camera_top_left_corner() {
-        var pos = [];
+        var pos = [];
         for (var i = 0; i < 2; i++) {
             pos[i] = Math.floor(game.focus.position[i] - (camera_size[i] / 2));
             // if the corner gets out of the map, we bring it back.
@@ -49,34 +78,44 @@ function view() {
         }
         return pos;
     }
+
+    function draw_game_object(entity, x, y) {
+        var repr = {"symbol":"", "colour":"#FFFFFF"};
+        if (entity.visible) {
+            repr = entity.repr
+        } else {
+            repr.symbol = entity.remembered_as.symbol;
+            repr.colour = rgb_to_hex(add_colours(entity.remembered_as.colour, [-40,-40,-40]));
+        }
+        map_display.draw(x, y, repr.symbol, repr.colour);
+    }
+
     update_display = function () {
         camera_corner = get_camera_top_left_corner();
+        // map tiles
         for (var i = camera_corner[0]; i < camera_corner[0] + camera_size[0]; i++) {
             for (var j = camera_corner[1]; j < camera_corner[1] + camera_size[1]; j++) {
-                map_display.draw(
+                draw_game_object(
+                    game.current_map.grid[i][j],
                     i - camera_corner[0] + screen_offset[0],
-                    j - camera_corner[1] + screen_offset[1],
-                    game.current_map.grid[i][j].symbol
+                    j - camera_corner[1] + screen_offset[1]
                 );
             }
         }
+        // anything else on the map
         for (var i = 0; i < game.current_map.entities.length; i++) {
             if (position_in_view(game.current_map.entities[i].position)) {
-                map_display.draw(
+                draw_game_object(
+                    game.current_map.entities[i],
                     game.current_map.entities[i].position[0] - camera_corner[0] + screen_offset[0],
-                    game.current_map.entities[i].position[1] - camera_corner[1] + screen_offset[1],
-                    game.current_map.entities[i].symbol
+                    game.current_map.entities[i].position[1] - camera_corner[1] + screen_offset[1]
                 );
             }
         }
-
         sidebar_display.clear();
-
         sidebar_display.drawText(0, 3, "health");
         sidebar_display.draw(3 ,4,'❤', "#"+status_colors.colourAt(game.player.health));
-
         print_logs();
-
     }
 
     bind_keys = function() {

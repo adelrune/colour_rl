@@ -19,12 +19,10 @@ function Map(grid) {
             }
         }
         this.fov.compute(game.player.position[0], game.player.position[1], 15, function(x, y) {
-            console.log([x,y]);
             if (typeof(that.grid[x]) !== "undefined" && typeof(that.grid[x][y]) !== "undefined") {
                 that.grid[x][y].set_visible();
             }
         });
-        console.log("aaaa");
         var alive = [];
         for (var i = 0; i < this.entities.length; i++) {
             if (this.entities[i].health > 0) {
@@ -79,4 +77,4 @@ function check_collisions(map, new_pos) {
 
 // grid = get_layout_from_rot_generator(rgen,2);
 
-grid = get_layout_from_rot_generator(new ROT.Map.EllerMaze(60,31));
+grid = get_layout_from_rot_generator(new ROT.Map.EllerMaze(600,310));

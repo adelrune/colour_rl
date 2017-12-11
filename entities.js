@@ -1,4 +1,4 @@
-function GameObject(position, has_collision, has_default_interaction, repr) {
+function GameObject(position, has_collision, has_default_interaction, repr, animation) {
     // Will the player trigger an action by trying to walk in that thing.
     this.has_default_interaction = has_default_interaction;
     this.position = position;
@@ -9,10 +9,17 @@ function GameObject(position, has_collision, has_default_interaction, repr) {
     // repr this was last seen as
     this.remembered_as = null;
     this.repr = repr;
+    this.animation = animation !== undefined ? animation : null;
     if (typeof(this.repr) === "string") {
         // If no colour is set, its white.
         this.repr = {"symbol":this.repr, "colour":[255,255,255]}
     }
+
+    // gets the next repr in the animation (or the static repr otherwise)
+    this.next_repr = function() {
+        return this.animation !== null ? this.animation.next() : this.repr;
+    }
+
     this.light_passes = function() {
         return ! this.has_collision;
     }
@@ -23,6 +30,22 @@ function GameObject(position, has_collision, has_default_interaction, repr) {
         this.remembered_as = this.persistent_memory ? this.repr : null;
     }
 }
+
+// An animated thing
+var Animation = function(frames) {
+    this.frames = frames;
+    this.index = 0;
+    this.next = function() {
+        var repr = this.frames[this.index];
+        this.index += 1;
+        this.index %= this.frames.length;
+        return repr;
+    }
+}
+
+// var Spell = function(primary, modifier, shape) {
+//     this.animation
+// }
 
 function Floor(repr) {
     GameObject.call(this, null, false, false, repr);

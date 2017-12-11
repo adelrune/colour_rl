@@ -82,7 +82,7 @@ function view() {
     function draw_game_object(entity, x, y) {
         var repr = {"symbol":"", "colour":"#FFFFFF"};
         if (entity.visible) {
-            repr = entity.repr;
+            repr = entity.next_repr();
         } else if (entity.remembered_as != null) {
             repr.symbol = entity.remembered_as.symbol;
             repr.colour = add_colours(entity.remembered_as.colour, [-150,-150,-150]);

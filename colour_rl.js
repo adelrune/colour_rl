@@ -26,8 +26,9 @@ function Game() {
 var message_log = ["Welcome to colour_rl"];
 
 var game = new Game();
-
+var update_display = function(){return};
 function game_loop() {
+    update_display();
     if(game.current_actor === "player") {
         if(game.next_player_action.name === "") {
             return;
@@ -46,10 +47,9 @@ function game_loop() {
         game.current_scheduler.setDuration(duration);
         game.current_actor = game.current_scheduler.next();
     }
-    update_display();
     game.current_map.update_state();
 }
 
 game.init();
 
-setInterval(game_loop, 1);
+setInterval(game_loop, 20);

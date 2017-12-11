@@ -9,3 +9,4 @@ var runes = {
 //starter : light + pure
 
 var cast = ["away", "self", "infuse"]
+

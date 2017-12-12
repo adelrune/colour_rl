@@ -32,20 +32,38 @@ function GameObject(position, has_collision, has_default_interaction, repr, anim
 }
 
 // An animated thing
-var Animation = function(frames) {
+var Animation = function(frames, loop) {
     this.frames = frames;
     this.index = 0;
+    this.loop = loop;
+    this.finished = false;
     this.next = function() {
         var repr = this.frames[this.index];
         this.index += 1;
+        this.finished = this.index == this.frames.lenght && !this.loop;
         this.index %= this.frames.length;
         return repr;
     }
 }
 
-// var Spell = function(primary, modifier, shape) {
-//     this.animation
-// }
+var Ability = function(base_delay, apply) {
+    this.base_delay = base_delay;
+    this.apply = apply;
+}
+
+function make_ability() {
+    return new Ability(5, function(args){
+        var affected = args.map.get_entities_at_position(args.pos);
+        for (var i = 0; i < affected.length; i++) {
+            affected[i].health -= 5;
+        }
+        args.map.animations.push(new Animation());
+    });
+}
+
+/*var Spell = function(primary, modifier, shape) {
+
+}*/
 
 function Floor(repr) {
     GameObject.call(this, null, false, false, repr);
@@ -82,6 +100,10 @@ function Actor(position, health, repr, name) {
         }
         // 10 arbitrary units of time
         return this.move_delay;
+    }
+    this.use_ability = function(args) {
+        var ability = make_ability(args);
+        ability.apply(args);
     }
 }
 

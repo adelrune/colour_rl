@@ -11,6 +11,9 @@ function Map(grid) {
     this.get_entity_square = function(entity) {
         return this.grid[entity.position[0]][entity.position[1]];
     }
+    this.get_entities_at_position function(pos) {
+        return this.entities.filter(function(ent){return JSON.stringify(pos) == JSON.stringify(ent.position)});
+    }
     this.update_state = function() {
         // Resets visibility states
         for (var i = 0; i < that.grid.length; i++) {

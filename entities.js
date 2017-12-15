@@ -37,13 +37,14 @@ var Animation = function(frames, loop) {
     this.index = 0;
     this.loop = loop;
     this.finished = false;
-    this.next = function() {
-        var repr = this.frames[this.index];
-        this.index += 1;
-        this.finished = this.index == this.frames.lenght && !this.loop;
-        this.index %= this.frames.length;
-        return repr;
-    }
+}
+
+Animation.prototype.next = function() {
+    var repr = this.frames[this.index];
+    this.index += 1;
+    this.finished = this.index == this.frames.lenght && !this.loop;
+    this.index %= this.frames.length;
+    return repr;
 }
 
 var Ability = function(base_delay, apply) {
@@ -51,13 +52,34 @@ var Ability = function(base_delay, apply) {
     this.apply = apply;
 }
 
+var VisualEffect = function(frames, next_func, position) {
+    Animation.call(this, frames, false);
+    this.position = position;
+    this.frames = args.frames;
+    this.next_func = next_func;
+    this.next = function() {
+        repr = Animation.prototype.next.call(this);
+        this.next_func();
+    };
+}
+
 function make_ability() {
-    return new Ability(5, function(args){
+    return new Ability(5, function(args) {
         var affected = args.map.get_entities_at_position(args.pos);
         for (var i = 0; i < affected.length; i++) {
             affected[i].health -= 5;
         }
-        args.map.animations.push(new Animation());
+        args.map.animations.push(new VisualEffect(
+            [{"symbol": '§', "colour":[13,0,0]}],
+            function(){
+                if (this.frames.length == 1) {
+                    for (var i = 0; i < 45; i++) {
+                        this.frames.push({"symbol":'§',"colour":[13 + 5*i,0,0]});
+                    }
+                }
+            },
+            args.pos
+        ));
     });
 }
 

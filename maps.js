@@ -3,6 +3,8 @@ function Map(grid) {
     // size in x and y
     this.dimensions = [grid.length, grid[0].length];
     this.entities = [];
+    // Particle effects that have yet to be played.
+    this.particles = [];
     // javascriiiiiiiipt
     var that = this;
     this.fov = new ROT.FOV.PreciseShadowcasting(function(x, y) {

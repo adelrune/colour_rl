@@ -52,36 +52,42 @@ var Ability = function(base_delay, apply) {
     this.apply = apply;
 }
 
-var VisualEffect = function(frames, next_func, position) {
+var Particle = function(frames, next_func, position) {
     Animation.call(this, frames, false);
     this.position = position;
-    this.frames = args.frames;
     this.next_func = next_func;
     this.next = function() {
         repr = Animation.prototype.next.call(this);
         this.next_func();
+        return repr;
     };
 }
 
-function make_ability() {
+// spells are going to be made on the fly like that
+// right now it does nothing interesting.
+function make_ability(args) {
     return new Ability(5, function(args) {
-        var affected = args.map.get_entities_at_position(args.pos);
+        console.log(args);
+        var affected = args.map.get_entities_at_position(args.position);
         for (var i = 0; i < affected.length; i++) {
             affected[i].health -= 5;
         }
-        args.map.animations.push(new VisualEffect(
-            [{"symbol": '§', "colour":[13,0,0]}],
+        p = new Particle (
+            [{"symbol": '§', "colour":[13,0,0]}, {"symbol": '§', "colour":[26,0,0]}],
             function(){
-                if (this.frames.length == 1) {
+                if (this.frames.length == 2) {
                     for (var i = 0; i < 45; i++) {
                         this.frames.push({"symbol":'§',"colour":[13 + 5*i,0,0]});
                     }
                 }
             },
-            args.pos
-        ));
+            args.position
+        );
+        args.map.particles.push(p);
     });
 }
+
+
 
 /*var Spell = function(primary, modifier, shape) {
 

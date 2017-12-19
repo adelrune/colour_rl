@@ -37,6 +37,8 @@ function view() {
     var log_len = 6;
     var log_start_pos = 15;
     var max_message_len = 20;
+    // This prevents getting player actions from keys while an animation is not done yet
+    var animation_lock = false;
     function print_logs() {
         var line_skips = 0;
         for (var i = 0; i + line_skips < log_len; i++) {
@@ -93,7 +95,38 @@ function view() {
         map_display.draw(x, y, repr["symbol"], rgb_to_hex(repr.colour));
     }
 
+    function draw_particle(particle, x, y) {
+        //console.log(particle);
+        var repr = particle.next();
+        console.log(particle);
+        var x = particle.position[0] - camera_corner[0] + screen_offset[0];
+        var y = particle.position[1] - camera_corner[1] + screen_offset[1];
+        // if we can see the tile, draw the animation
+        if (game.current_map.get_entity_square(particle).visible) {
+            map_display.draw(x, y, repr["symbol"], rgb_to_hex(repr.colour));
+        }
+    }
+
+    function play_particles() {
+        for (var i = 0; i < game.current_map.particles.length; i++) {
+            draw_particle(game.current_map.particles[i]);
+        }
+        game.current_map.particles = game.current_map.particles.filter(function(particle){!particle.finished});
+        // When this func is entered, length > 0, if it falls to 0 we unlock the animation lock.
+        if (game.current_map.particles.length === 0) {
+            animation_lock = false;
+        }
+    }
+
     update_display = function () {
+        // if we have particles to play, we lock the controls and play them. This will be entered multiple times until the list is empty
+        if (game.current_map.particles.length > 0) {
+            animation_lock = true;
+            play_particles();
+            // we don't update anything until the animation has played
+            return
+        }
+
         camera_corner = get_camera_top_left_corner();
         // map tiles
         for (var i = camera_corner[0]; i < camera_corner[0] + camera_size[0]; i++) {
@@ -132,11 +165,14 @@ function view() {
         var keys_to_movement = {"38":[0, -1],"40":[0, 1], "37":[-1, 0], "39":[1, 0]};
 
         $("body").keydown(function(e) {
-            if(!game.waiting_for_player) {
+            if(!game.waiting_for_player || animation_lock) {
                 return
             }
             if (keys_to_movement[""+e.keyCode] !== undefined) {
                 game.next_player_action = {name:"move", args:{"map":game.current_map, "movement": keys_to_movement[""+e.keyCode]}}
+            }
+            if (e.keyCode === 90) {
+                game.next_player_action = {name:"use_ability", args:{"map":game.current_map, "position": game.player.position}}
             }
         });
     }

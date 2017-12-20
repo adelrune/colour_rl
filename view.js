@@ -102,7 +102,7 @@ function view() {
         var x = particle.position[0] - camera_corner[0] + screen_offset[0];
         var y = particle.position[1] - camera_corner[1] + screen_offset[1];
         // if we can see the tile, draw the animation
-        if (game.current_map.get_entity_square(particle).visible) {
+        if (game.current_map.get_entity_square(particle).visible && position_in_view(particle.position)) {
             map_display.draw(x, y, repr["symbol"], rgb_to_hex(repr.colour));
         }
     }
@@ -111,7 +111,7 @@ function view() {
         for (var i = 0; i < game.current_map.particles.length; i++) {
             draw_particle(game.current_map.particles[i]);
         }
-        game.current_map.particles = game.current_map.particles.filter(function(particle){!particle.finished});
+        game.current_map.particles = game.current_map.particles.filter(function(particle){return !particle.finished});
         // When this func is entered, length > 0, if it falls to 0 we unlock the animation lock.
         if (game.current_map.particles.length === 0) {
             animation_lock = false;

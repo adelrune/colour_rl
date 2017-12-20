@@ -39,10 +39,10 @@ var Animation = function(frames, loop) {
     this.finished = false;
 }
 
-Animation.prototype.next = function() {
+Animation.prototype.next = function() {
     var repr = this.frames[this.index];
     this.index += 1;
-    this.finished = this.index == this.frames.lenght && !this.loop;
+    this.finished = this.index == this.frames.length && !this.loop;
     this.index %= this.frames.length;
     return repr;
 }

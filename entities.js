@@ -56,7 +56,7 @@ var Particle = function(frames, next_func, position) {
     Animation.call(this, frames, false);
     this.position = position;
     this.next_func = next_func;
-    this.next = function() {
+    this.next = function() {
         repr = Animation.prototype.next.call(this);
         this.next_func();
         return repr;
@@ -67,7 +67,6 @@ var Particle = function(frames, next_func, position) {
 // right now it does nothing interesting.
 function make_ability(args) {
     return new Ability(5, function(args) {
-        console.log(args);
         var affected = args.map.get_entities_at_position(args.position);
         for (var i = 0; i < affected.length; i++) {
             affected[i].health -= 5;
@@ -84,6 +83,7 @@ function make_ability(args) {
             args.position
         );
         args.map.particles.push(p);
+        return 5
     });
 }
 
@@ -131,7 +131,7 @@ function Actor(position, health, repr, name) {
     }
     this.use_ability = function(args) {
         var ability = make_ability(args);
-        ability.apply(args);
+        return ability.apply(args);
     }
 }
 

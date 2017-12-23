@@ -169,10 +169,10 @@ function view() {
                 return
             }
             if (keys_to_movement[""+e.keyCode] !== undefined) {
-                game.next_player_action = {name:"move", args:{"map":game.current_map, "movement": keys_to_movement[""+e.keyCode]}}
+                game.next_action = {name:"move", args:{"map":game.current_map, "movement": keys_to_movement[""+e.keyCode]}}
             }
             if (e.keyCode === 90) {
-                game.next_player_action = {name:"use_ability", args:{"map":game.current_map, "position": game.player.position}}
+                game.next_action = {name:"use_ability", args:{"map":game.current_map, "position": game.player.position}}
             }
         });
     }

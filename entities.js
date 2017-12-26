@@ -6,18 +6,26 @@ function GameObject(position, has_collision, has_default_interaction, repr, anim
     // This will generally be false for things that moves a lot
     this.persistent_memory = true;
     this.visible = false;
+    // Changes the repr.
+    this.selected = false;
     // repr this was last seen as
     this.remembered_as = null;
     this.repr = repr;
     this.animation = animation !== undefined ? animation : null;
     if (typeof(this.repr) === "string") {
         // If no colour is set, its white.
-        this.repr = {"symbol":this.repr, "colour":[255,255,255]}
+        this.repr = {"symbol":this.repr, "colour":[255,255,255], "bg":[0,0,0]}
     }
 
     // gets the next repr in the animation (or the static repr otherwise)
     this.next_repr = function() {
-        return this.animation !== null ? this.animation.next() : this.repr;
+        var repr = clone(this.animation !== null ? this.animation.next() : this.repr);
+        if (this.selected) {
+            repr.bg = [124,124,124];
+        } else {
+            repr.bg = [0,0,0];
+        }
+        return repr;
     }
 
     this.light_passes = function() {
@@ -66,24 +74,28 @@ var Particle = function(frames, next_func, position) {
 // spells are going to be made on the fly like that
 // right now it does nothing interesting.
 function make_ability(args) {
-    return new Ability(5, function(args) {
-        var affected = args.map.get_entities_at_position(args.position);
+    function effect() {
+        var affected = game.current_map.get_selected_entities();
         for (var i = 0; i < affected.length; i++) {
             affected[i].health -= 5;
-        }
-        p = new Particle (
-            [{"symbol": '§', "colour":[13,0,0]}, {"symbol": '§', "colour":[26,0,0]}],
-            function(){
-                if (this.frames.length == 2) {
-                    for (var i = 0; i < 45; i++) {
-                        this.frames.push({"symbol":'§',"colour":[13 + 5*i,0,0]});
+            p = new Particle (
+                [{"symbol": '§', "colour":[13,0,0]}, {"symbol": '§', "colour":[26,0,0]}],
+                function() {
+                    if (this.frames.length == 2) {
+                        for (var i = 0; i < 45; i++) {
+                            this.frames.push({"symbol":'§',"colour":[13 + 5*i,0,0]});
+                        }
                     }
-                }
-            },
-            args.position
-        );
-        args.map.particles.push(p);
+                },
+                affected[i].position
+            );
+            game.current_map.particles.push(p);
+        }
+        game.change_mode(GAME)
         return 5
+    }
+    return new Ability(5, function(args) {
+        game.change_mode(SELECTION, effect);
     });
 }
 

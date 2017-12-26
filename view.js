@@ -5,6 +5,10 @@ function comp_to_hex(c) {
 }
 
 function rgb_to_hex(rgb) {
+    // no colour means black
+    if(rgb === undefined) {
+        return "#000000";
+    }
     return "#" + comp_to_hex(rgb[0]) + comp_to_hex(rgb[1]) + comp_to_hex(rgb[2]);
 }
 
@@ -31,7 +35,6 @@ function view() {
     var camera_size = [30,30];
     var screen_offset = [2,2];
     var camera_corner = [0,0];
-    //vue
     var status_colors = new Rainbow();
     status_colors.setSpectrum("red", "yellow", "green");
     var log_len = 6;
@@ -39,6 +42,7 @@ function view() {
     var max_message_len = 20;
     // This prevents getting player actions from keys while an animation is not done yet
     var animation_lock = false;
+
     function print_logs() {
         var line_skips = 0;
         for (var i = 0; i + line_skips < log_len; i++) {
@@ -92,7 +96,7 @@ function view() {
             // Do nothing if its not remembered and its not visible.
             return
         }
-        map_display.draw(x, y, repr["symbol"], rgb_to_hex(repr.colour));
+        map_display.draw(x, y, repr["symbol"], rgb_to_hex(repr.colour), rgb_to_hex(repr.bg));
     }
 
     function draw_particle(particle, x, y) {
@@ -103,7 +107,7 @@ function view() {
         var y = particle.position[1] - camera_corner[1] + screen_offset[1];
         // if we can see the tile, draw the animation
         if (game.current_map.get_entity_square(particle).visible && position_in_view(particle.position)) {
-            map_display.draw(x, y, repr["symbol"], rgb_to_hex(repr.colour));
+            map_display.draw(x, y, repr["symbol"], rgb_to_hex(repr.colour), rgb_to_hex(repr.bg));
         }
     }
 
@@ -164,7 +168,7 @@ function view() {
         // up, down, left, right
         var keys_to_movement = {"38":[0, -1],"40":[0, 1], "37":[-1, 0], "39":[1, 0]};
 
-        $("body").keydown(function(e) {
+        function game_mode_keys(e) {
             if(!game.waiting_for_player || animation_lock) {
                 return
             }
@@ -174,6 +178,18 @@ function view() {
             if (e.keyCode === 90) {
                 game.next_action = {name:"use_ability", args:{"map":game.current_map, "position": game.player.position}}
             }
+        }
+        function selection_mode_keys(e) {
+            if (keys_to_movement[""+e.keyCode] !== undefined) {
+                game.next_action = {name:"move_focus", args:{"movement": keys_to_movement[""+e.keyCode]}}
+            }
+            if (e.keyCode === 13) {
+                game.next_action = {name:"select", args:{}}
+            }
+        }
+        var mode_bindings = [game_mode_keys, selection_mode_keys];
+        $("body").keydown(function(e) {
+            mode_bindings[game.current_mode](e);
         });
     }
 

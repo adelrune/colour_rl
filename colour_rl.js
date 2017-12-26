@@ -6,6 +6,15 @@ var SELECTION = 1;
 // MENU is when navigating in a menu \o/
 var MENU = 2;
 
+var game = undefined;
+
+// Default selection function, only calls the callback for the games
+// focus current position.
+var single_tile_selection = function(callback) {
+    // Don't call with position for compatibility with rot.js line of sight functions.
+    callback(game.focus.position[0], game.focus.position[1])
+}
+
 function Game() {
     this.player = null;
     this.current_scheduler = null;
@@ -19,34 +28,39 @@ function Game() {
     this.current_mode = GAME;
     //
     this.selection_callback = null;
+    // Function that calls a callback with the positions selected by the cursor.
+    this.selection_function = null;
 
     // The default state is GAME, other states uses the select method to go back to game
     // and to execute the callback that takes the thing that was selected (either in menu or selection mode)
-    this.change_mode = function(mode, callback) {
+    this.change_mode = function(mode, callback, select_func) {
         if (mode === GAME) {
             this.focus = this.player;
         } else if (mode === SELECTION) {
             this.focus = {"position":this.player.position};
+            // default selection is single tile.
+            this.selection_function = select_func !== undefined ? select_func : single_tile_selection;
         }
         this.selection_callback = callback;
         this.current_mode = mode;
+        // resets the next action
+        this.next_action.name = "";
     }
     // moves the focus of the game in selection mode.
-    this.move_focus = function(movement) {
+    this.move_focus = function(args) {
         if (this.current_mode !== SELECTION) {
             return;
         }
         var new_pos = [];
         for (var i = 0; i < args.movement.length; i++) {
-            new_pos.push(movement[i] + this.focus.position[i]);
+            new_pos.push(args.movement[i] + this.focus.position[i]);
         }
         this.focus.position = new_pos;
     }
 
     this.select = function(args) {
-        // default return mode is GAME, I guess MENU could return in SELECTION too.
-        args.return_mode = args.return_mode === undefined ? GAME : args.return_mode;
-        this.change_mode(args.return_mode);
+        // The selection callback is responsible for any mode change resulting from
+        // a call to select()
         this.selection_callback(args);
     }
 
@@ -67,7 +81,7 @@ function Game() {
 
 var message_log = ["Welcome to colour_rl"];
 
-var game = new Game();
+game = new Game();
 // dummy function, needs to be defined by the view.
 var update_display = function(){return};
 
@@ -86,6 +100,7 @@ function game_mode_loop() {
         game.next_action.name = "";
         game.current_actor = game.current_scheduler.next();
     } else {
+        console.log("actor move");
         var duration = game.current_actor.get_next_action()
         game.current_scheduler.setDuration(duration);
         game.current_actor = game.current_scheduler.next();
@@ -98,6 +113,8 @@ function selection_mode_loop() {
         return;
     }
     game[game.next_action.name](game.next_action.args);
+    game.next_action.name = "";
+    game.current_map.update_state();
 }
 
 var mode_funcs = [];

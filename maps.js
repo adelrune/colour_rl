@@ -14,13 +14,37 @@ function Map(grid) {
         return this.grid[entity.position[0]][entity.position[1]];
     }
     this.get_entities_at_position = function(pos) {
+        // javascriiiiiiiipt
         return this.entities.filter(function(ent){return JSON.stringify(pos) == JSON.stringify(ent.position)});
+    }
+    this.get_selected_positions = function() {
+        var selected = []
+        for (var i = 0; i < this.grid.length; i++) {
+            for (var j = 0; j < this.grid[i].length; j++) {
+                if (this.grid[i][j].selected) {
+                    selected.push([i,j]);
+                }
+            }
+        }
+        console.log(selected);
+        return selected;
+    }
+    this.get_selected_entities = function() {
+        var selected = this.get_selected_positions()
+        var ret_val = [];
+        for (var i = 0; i < selected.length; i++) {
+            console.log(selected[i]);
+            ret_val = ret_val.concat(this.get_entities_at_position(selected[i]));
+        }
+        console.log(ret_val);
+        return ret_val;
     }
     this.update_state = function() {
         // Resets visibility states
         for (var i = 0; i < that.grid.length; i++) {
             for (var j = 0; j < that.grid[i].length; j++) {
                 that.grid[i][j].visible = false;
+                that.grid[i][j].selected = false;
             }
         }
         this.fov.compute(game.player.position[0], game.player.position[1], 15, function(x, y) {
@@ -29,19 +53,29 @@ function Map(grid) {
             }
         });
         var alive = [];
+        // This section is for tile selection in SELECTION mode
+        if(game.current_mode === SELECTION) {
+            game.selection_function(function(x, y){
+                that.grid[x][y].selected = true;
+            });
+        }
+        // visibility, selection and health in the same loop for entities
         for (var i = 0; i < this.entities.length; i++) {
             if (this.entities[i].health > 0) {
                 alive.push(this.entities[i]);
                 this.entities[i].visible = false;
-                if (this.get_entity_square(this.entities[i]).visible) {
+                var square = this.get_entity_square(this.entities[i]);
+                if (square.visible) {
                     this.entities[i].set_visible();
                 }
+                this.entities[i].selected = square.selected;
             } else {
                 this.scheduler.remove(this.entities[i]);
             }
         }
         this.entities = alive;
     }
+
     this.scheduler = new ROT.Scheduler.Action();
 }
 

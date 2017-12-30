@@ -75,27 +75,34 @@ var Particle = function(frames, next_func, position) {
 // right now it does nothing interesting.
 function make_ability(args) {
     function effect() {
+        var positions = game.current_map.get_selected_positions();
         var affected = game.current_map.get_selected_entities();
-        for (var i = 0; i < affected.length; i++) {
-            affected[i].health -= 5;
+        for (var i = 0; i < positions.length; i++) {
             p = new Particle (
                 [{"symbol": '§', "colour":[13,0,0]}, {"symbol": '§', "colour":[26,0,0]}],
                 function() {
                     if (this.frames.length == 2) {
-                        for (var i = 0; i < 45; i++) {
-                            this.frames.push({"symbol":'§',"colour":[13 + 5*i,0,0]});
+                        factor = Math.floor(Math.random() * 15) + 5;
+                        for (var i = 0; i < factor; i++) {
+                            var ichelou = i-5;
+                            ichelou = ichelou < 0 ? 0 : ichelou;
+                            this.frames.push({"symbol":'§',"colour":[55 + 10*i,0,0], "bg":[255 - 9*i,10*(factor-5) - ichelou*9,0]});
                         }
                     }
                 },
-                affected[i].position
+                positions[i]
             );
             game.current_map.particles.push(p);
+        }
+        for (var i = 0; i < affected.length; i++) {
+            affected[i].health -= 5;
+            message_log.push(affected[i].name + " is engulfed in flames " + " for "+5+"damage");
         }
         game.change_mode(GAME)
         return 5
     }
     return new Ability(5, function(args) {
-        game.change_mode(SELECTION, effect);
+        game.change_mode(SELECTION, effect, make_round_selection(4));
     });
 }
 

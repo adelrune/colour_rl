@@ -14,6 +14,19 @@ var single_tile_selection = function(callback) {
     // Don't call with position for compatibility with rot.js line of sight functions.
     callback(game.focus.position[0], game.focus.position[1])
 }
+// right now its not very round and very buggy, the rot fov thing is not very good for that.
+function make_round_selection(radius) {
+    return function(callback) {
+        var round = new ROT.FOV.PreciseShadowcasting(function(x, y) {
+            return true;
+        });
+        round.compute(game.focus.position[0], game.focus.position[1], radius, callback);
+    }
+}
+
+var round_selection = function(callback, radius) {
+
+}
 
 function Game() {
     this.player = null;
@@ -86,6 +99,10 @@ game = new Game();
 var update_display = function(){return};
 
 function game_mode_loop() {
+    // waits for end of animation before doing a move.
+    if(!game.current_map.animation_finished()) {
+        return;
+    }
     if(game.current_actor === "player") {
         if(game.next_action.name === "") {
             return;
@@ -100,7 +117,6 @@ function game_mode_loop() {
         game.next_action.name = "";
         game.current_actor = game.current_scheduler.next();
     } else {
-        console.log("actor move");
         var duration = game.current_actor.get_next_action()
         game.current_scheduler.setDuration(duration);
         game.current_actor = game.current_scheduler.next();

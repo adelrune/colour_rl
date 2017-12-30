@@ -5,6 +5,10 @@ function Map(grid) {
     this.entities = [];
     // Particle effects that have yet to be played.
     this.particles = [];
+    // The animation is finished if there are no particles to play.
+    this.animation_finished = function() {
+        return !!this.particles;
+    }
     // javascriiiiiiiipt
     var that = this;
     this.fov = new ROT.FOV.PreciseShadowcasting(function(x, y) {
@@ -14,7 +18,6 @@ function Map(grid) {
         return this.grid[entity.position[0]][entity.position[1]];
     }
     this.get_entities_at_position = function(pos) {
-        // javascriiiiiiiipt
         return this.entities.filter(function(ent){return JSON.stringify(pos) == JSON.stringify(ent.position)});
     }
     this.get_selected_positions = function() {
@@ -33,10 +36,8 @@ function Map(grid) {
         var selected = this.get_selected_positions()
         var ret_val = [];
         for (var i = 0; i < selected.length; i++) {
-            console.log(selected[i]);
             ret_val = ret_val.concat(this.get_entities_at_position(selected[i]));
         }
-        console.log(ret_val);
         return ret_val;
     }
     this.update_state = function() {

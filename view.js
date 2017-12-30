@@ -37,8 +37,8 @@ function view() {
     var camera_corner = [0,0];
     var status_colors = new Rainbow();
     status_colors.setSpectrum("red", "yellow", "green");
-    var log_len = 6;
-    var log_start_pos = 15;
+    var log_len = 12;
+    var log_start_pos = 21;
     var max_message_len = 20;
     // This prevents getting player actions from keys while an animation is not done yet
     var animation_lock = false;
@@ -102,7 +102,6 @@ function view() {
     function draw_particle(particle, x, y) {
         //console.log(particle);
         var repr = particle.next();
-        console.log(particle);
         var x = particle.position[0] - camera_corner[0] + screen_offset[0];
         var y = particle.position[1] - camera_corner[1] + screen_offset[1];
         // if we can see the tile, draw the animation
@@ -123,13 +122,6 @@ function view() {
     }
 
     update_display = function () {
-        // if we have particles to play, we lock the controls and play them. This will be entered multiple times until the list is empty
-        if (game.current_map.particles.length > 0) {
-            animation_lock = true;
-            play_particles();
-            // we don't update anything until the animation has played
-            return
-        }
 
         camera_corner = get_camera_top_left_corner();
         // map tiles
@@ -157,6 +149,11 @@ function view() {
                     game.current_map.entities[i].position[1] - camera_corner[1] + screen_offset[1]
                 );
             }
+        }
+        // if we have particles to play, we lock the controls and play them. This will be entered multiple times until the list is empty
+        if (game.current_map.particles.length > 0) {
+            animation_lock = true;
+            play_particles();
         }
         sidebar_display.clear();
         sidebar_display.drawText(0, 3, "health");

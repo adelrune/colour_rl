@@ -12,20 +12,30 @@ var game = undefined;
 // focus current position.
 var single_tile_selection = function(callback) {
     // Don't call with position for compatibility with rot.js line of sight functions.
-    callback(game.focus.position[0], game.focus.position[1])
+    callback(game.focus.position, 1)
 }
-// right now its not very round and very buggy, the rot fov thing is not very good for that.
+
 function make_round_selection(radius) {
     return function(callback) {
-        var round = new ROT.FOV.PreciseShadowcasting(function(x, y) {
-            return true;
-        });
-        round.compute(game.focus.position[0], game.focus.position[1], radius, callback);
+        // nighbours we are checking.
+        var directions = [[1,0], [-1,0], [0,1], [0,-1]];
+        // tiles that are selected.
+        var center = game.focus.position;
+        var open_tiles = [game.focus.position];
+        var idx = 0;
+        // while our list grows, adds neighbours that exist and that aren't too far.
+        while(open_tiles.length > idx) {
+            var level = JSON.stringify(open_tiles[idx]) == JSON.stringify(game.focus.position) ? 2 : 1;
+            callback(open_tiles[idx], level);
+            for (var i = 0; i < directions.length; i++) {
+                var pos = add_positions(directions[i], open_tiles[idx]);
+                if (game.current_map.get_grid_at_position(pos) && !obj_in_array(pos, open_tiles) && euclidian_distance(pos, center) <= radius) {
+                    open_tiles.push(pos);
+                }
+            }
+            idx+=1;
+        }
     }
-}
-
-var round_selection = function(callback, radius) {
-
 }
 
 function Game() {
@@ -39,18 +49,20 @@ function Game() {
     this.current_actor = null;
     this.focus = null;
     this.current_mode = GAME;
-    //
     this.selection_callback = null;
     // Function that calls a callback with the positions selected by the cursor.
     this.selection_function = null;
-
+    // this is either "memory", "sight" or undefined. Limits what square can be moved to.
+    this.selection_limit = null;
     // The default state is GAME, other states uses the select method to go back to game
     // and to execute the callback that takes the thing that was selected (either in menu or selection mode)
-    this.change_mode = function(mode, callback, select_func) {
+    this.change_mode = function(mode, callback, select_func, args) {
+        args = args === undefined ? {} : args;
         if (mode === GAME) {
             this.focus = this.player;
         } else if (mode === SELECTION) {
             this.focus = {"position":this.player.position};
+            this.selection_limit = args.limit
             // default selection is single tile.
             this.selection_function = select_func !== undefined ? select_func : single_tile_selection;
         }
@@ -68,7 +80,14 @@ function Game() {
         for (var i = 0; i < args.movement.length; i++) {
             new_pos.push(args.movement[i] + this.focus.position[i]);
         }
-        this.focus.position = new_pos;
+        var can_move = (
+            !this.selection_limit ||
+            (this.selection_limit === "memory" && this.current_map.grid[new_pos[0]][new_pos[1]].remembered_as) ||
+            (this.selection_limit === "sight" && this.current_map.grid[new_pos[0]][new_pos[1]].visible)
+        );
+        if (can_move) {
+            this.focus.position = new_pos;
+        }
     }
 
     this.select = function(args) {

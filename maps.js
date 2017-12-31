@@ -29,8 +29,13 @@ function Map(grid) {
                 }
             }
         }
-        console.log(selected);
         return selected;
+    }
+    this.get_grid_at_position = function(pos) {
+        if (this.grid[pos[0]] && this.grid[pos[0]][pos[1]]) {
+            return this.grid[pos[0]][pos[1]];
+        }
+        return null;
     }
     this.get_selected_entities = function() {
         var selected = this.get_selected_positions()
@@ -48,7 +53,7 @@ function Map(grid) {
                 that.grid[i][j].selected = false;
             }
         }
-        this.fov.compute(game.player.position[0], game.player.position[1], 15, function(x, y) {
+        this.fov.compute(game.player.position[0], game.player.position[1], 6, function(x, y) {
             if (typeof(that.grid[x]) !== "undefined" && typeof(that.grid[x][y]) !== "undefined") {
                 that.grid[x][y].set_visible();
             }
@@ -56,8 +61,8 @@ function Map(grid) {
         var alive = [];
         // This section is for tile selection in SELECTION mode
         if(game.current_mode === SELECTION) {
-            game.selection_function(function(x, y){
-                that.grid[x][y].selected = true;
+            game.selection_function(function(pos, level){
+                that.grid[pos[0]][pos[1]].selected = level;
             });
         }
         // visibility, selection and health in the same loop for entities

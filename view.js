@@ -31,6 +31,15 @@ function add_colours(col1, col2) {
     return col;
 }
 
+function divide_colours(col1, col2) {
+    var col = [];
+    for (var i=0; i<3; i++) {
+        col[i] = col1[i] / col2[i];
+        col[i] = Math.floor(col[i]);
+    }
+    return col;
+}
+
 function view() {
     var camera_size = [30,30];
     var screen_offset = [2,2];
@@ -86,15 +95,13 @@ function view() {
     }
 
     function draw_game_object(entity, x, y) {
-        var repr = {"symbol":"", "colour":"#FFFFFF"};
-        if (entity.visible) {
-            repr = entity.next_repr();
-        } else if (entity.remembered_as != null) {
-            repr.symbol = entity.remembered_as.symbol;
-            repr.colour = add_colours(entity.remembered_as.colour, [-150,-150,-150]);
-        } else if (entity.remembered_as == null) {
-            // Do nothing if its not remembered and its not visible.
-            return
+        repr = entity.next_repr();
+        if (repr === null) {
+            return;
+        }
+        if (repr.memory) {
+            repr.colour = divide_colours(repr.colour, [2,2,2]);
+            repr.bg = divide_colours(repr.bg, [2,2,2]);
         }
         map_display.draw(x, y, repr["symbol"], rgb_to_hex(repr.colour), rgb_to_hex(repr.bg));
     }

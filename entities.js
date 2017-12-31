@@ -6,7 +6,7 @@ function GameObject(position, has_collision, has_default_interaction, repr, anim
     // This will generally be false for things that moves a lot
     this.persistent_memory = true;
     this.visible = false;
-    // Changes the repr.
+    // changes the repr, false if not selected, is a number for the selection level.
     this.selected = false;
     // repr this was last seen as
     this.remembered_as = null;
@@ -19,11 +19,20 @@ function GameObject(position, has_collision, has_default_interaction, repr, anim
 
     // gets the next repr in the animation (or the static repr otherwise)
     this.next_repr = function() {
-        var repr = clone(this.animation !== null ? this.animation.next() : this.repr);
-        if (this.selected) {
-            repr.bg = [124,124,124];
+        if (this.visible) {
+            repr = clone(this.animation !== null ? this.animation.next() : this.repr);
+        } else if (this.remembered_as) {
+            repr = clone(this.remembered_as);
+            // we tell the thing its a memory, display is up to the view.
+            repr.memory = true;
         } else {
-            repr.bg = [0,0,0];
+            // returns null if it doesn't have a valid display
+            return null;
+        }
+        if (this.selected) {
+            repr.bg = [100+this.selected*24,100+this.selected*24,100+this.selected*24];
+        } else {
+            repr.bg = repr.bg;
         }
         return repr;
     }
@@ -102,7 +111,7 @@ function make_ability(args) {
         return 5
     }
     return new Ability(5, function(args) {
-        game.change_mode(SELECTION, effect, make_round_selection(4));
+        game.change_mode(SELECTION, effect, make_round_selection(1), {limit:"sight"});
     });
 }
 

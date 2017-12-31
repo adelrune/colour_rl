@@ -111,7 +111,7 @@ function make_ability(args) {
         return 5
     }
     return new Ability(5, function(args) {
-        game.change_mode(SELECTION, effect, make_round_selection(1), {limit:"sight"});
+        game.change_mode(SELECTION, effect, make_round_selection(3), {limit:"sight"});
     });
 }
 

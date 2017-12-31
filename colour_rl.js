@@ -15,7 +15,9 @@ var single_tile_selection = function(callback) {
     callback(game.focus.position, 1)
 }
 
-function make_round_selection(radius) {
+// should switch to ray casting for better !ignore_walls. right now its a bit silly
+// this algorithm is probably more performant than ray casting for smite targeting.
+function make_round_selection(radius, ignore_walls) {
     return function(callback) {
         // nighbours we are checking.
         var directions = [[1,0], [-1,0], [0,1], [0,-1]];
@@ -25,11 +27,14 @@ function make_round_selection(radius) {
         var idx = 0;
         // while our list grows, adds neighbours that exist and that aren't too far.
         while(open_tiles.length > idx) {
-            var level = JSON.stringify(open_tiles[idx]) == JSON.stringify(game.focus.position) ? 2 : 1;
+            var level = JSON.stringify(open_tiles[idx]) == JSON.stringify(game.focus.position) ? 4 : 1;
             callback(open_tiles[idx], level);
             for (var i = 0; i < directions.length; i++) {
                 var pos = add_positions(directions[i], open_tiles[idx]);
-                if (game.current_map.get_grid_at_position(pos) && !obj_in_array(pos, open_tiles) && euclidian_distance(pos, center) <= radius) {
+                if (game.current_map.get_grid_at_position(pos) &&
+                    !obj_in_array(pos, open_tiles) &&
+                    euclidian_distance(pos, center) <= radius &&
+                    (ignore_walls || !game.current_map.get_grid_at_position(pos).has_collision)) {
                     open_tiles.push(pos);
                 }
             }

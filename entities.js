@@ -14,7 +14,7 @@ function GameObject(position, has_collision, has_default_interaction, repr, anim
     this.animation = animation !== undefined ? animation : null;
     if (typeof(this.repr) === "string") {
         // If no colour is set, its white.
-        this.repr = {"symbol":this.repr, "colour":[255,255,255], "bg":[0,0,0]}
+        this.repr = {"symbol":this.repr, "colour":[255,255,255], "bg":[35,35,35]}
     }
 
     // gets the next repr in the animation (or the static repr otherwise)
@@ -105,7 +105,7 @@ function make_ability(args) {
         }
         for (var i = 0; i < affected.length; i++) {
             affected[i].health -= 5;
-            message_log.push(affected[i].name + " is engulfed in flames " + " for "+5+"damage");
+            game.message_log.push(affected[i].name + " is engulfed in flames " + " for "+5+"damage");
         }
         game.change_mode(GAME)
         return 5
@@ -183,10 +183,7 @@ function resolve_attack(attacker, attacked) {
     // TODO: stats and all that bullshit
     var damage = 10;
     attacked.health -= damage;
-    message_log.push(attacker.name + " attacks " +attacked.name + " for " + damage);
-    if (attacked.health <= 0) {
-        message_log.push(attacked.name + " dies");
-    }
+    game.message_log.push(attacker.name + " attacks " +attacked.name + " for " + damage);
     // TODO: change by attack delay
     return attacker.move_delay
 }

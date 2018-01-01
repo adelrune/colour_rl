@@ -43,6 +43,18 @@ function make_round_selection(radius, ignore_walls) {
     }
 }
 
+// A menu is some header text displayed in columns, some options
+// which are {text:[], description:"", value:""}
+// A menu has a selected item for which description is displayed.
+// when the game.select() function is called, the
+function Menu(title, options) {
+    this.title = title
+    // an option is an object of the format {text:[], }
+    this.options = options;
+    // selected item is 0 by default
+    this.selection = 0;
+}
+
 function Game() {
     this.player = null;
     this.current_scheduler = null;
@@ -53,6 +65,7 @@ function Game() {
     this.waiting_for_player = true;
     this.current_actor = null;
     this.focus = null;
+    this.message_log = ["Welcome to colour_rl"];
     this.current_mode = GAME;
     this.selection_callback = null;
     // Function that calls a callback with the positions selected by the cursor.
@@ -95,10 +108,10 @@ function Game() {
         }
     }
 
-    this.select = function(args) {
+    this.select = function() {
         // The selection callback is responsible for any mode change resulting from
         // a call to select()
-        this.selection_callback(args);
+        this.selection_callback();
     }
 
     this.init = function() {
@@ -115,8 +128,6 @@ function Game() {
         this.current_map.update_state();
     }
 }
-
-var message_log = ["Welcome to colour_rl"];
 
 game = new Game();
 // dummy function, needs to be defined by the view.

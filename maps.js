@@ -76,6 +76,7 @@ function Map(grid) {
                 }
                 this.entities[i].selected = square.selected;
             } else {
+                game.message_log.push(this.entities[i].name + " dies");
                 this.scheduler.remove(this.entities[i]);
             }
         }
@@ -122,5 +123,5 @@ function check_collisions(map, new_pos) {
 
 // grid = get_layout_from_rot_generator(rgen,2);
 
-grid = get_layout_from_rot_generator(new ROT.Map.EllerMaze(600,310));
-// grid = get_layout_from_rot_generator(new ROT.Map.Arena(600,310));
+//grid = get_layout_from_rot_generator(new ROT.Map.EllerMaze(600,310));
+grid = get_layout_from_rot_generator(new ROT.Map.Arena(600,310));

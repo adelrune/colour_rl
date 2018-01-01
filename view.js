@@ -54,18 +54,22 @@ function view() {
 
     function print_logs() {
         var line_skips = 0;
+        // we want to paint the first message white and the other grey.
+        var first = true;
         for (var i = 0; i + line_skips < log_len; i++) {
-            if (message_log[message_log.length - i]) {
+            if (game.message_log[game.message_log.length - i]) {
+                var colour = first ? [255,255,255] : [170,170,170];
                 // floor since we already ++ it whatever the len
-                var message = message_log[message_log.length - i];
+                var message = "%c{" + rgb_to_hex(colour) + "}" + game.message_log[game.message_log.length - i];
 
                 var msg_line_len = Math.floor(message.length / max_message_len);
                 // If we don't have enough lines, we simply don't display the message.
                 // Could be problematic for very long messages
                 if (msg_line_len + i + line_skips < log_len) {
-                    sidebar_display.drawText(0, log_start_pos - i - msg_line_len - line_skips, message, 20);
+                    sidebar_display.drawText(0, log_start_pos - i - msg_line_len - line_skips, message, max_message_len);
                 }
-
+                first = false;
+                // rotjs does some fancy line breaking, this insures that it does not break.
                 line_skips += msg_line_len;
             }
         }
@@ -188,7 +192,7 @@ function view() {
                 game.next_action = {name:"move_focus", args:{"movement": keys_to_movement[""+e.keyCode]}}
             }
             if (e.keyCode === 13) {
-                game.next_action = {name:"select", args:{}}
+                game.next_action = {name:"select"}
             }
         }
         var mode_bindings = [game_mode_keys, selection_mode_keys];
@@ -198,8 +202,12 @@ function view() {
     }
 
     var init = function() {
-        document.body.appendChild(map_display.getContainer());
-        document.body.appendChild(sidebar_display.getContainer());
+        var map_container = map_display.getContainer();
+        map_container.classList.add("map-display");
+        document.body.appendChild(map_container);
+        var sidebar_container = sidebar_display.getContainer();
+        sidebar_container.classList.add("sidebar-display");
+        document.body.appendChild(sidebar_container);
         bind_keys();
     }
 

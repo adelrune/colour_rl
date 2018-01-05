@@ -42,15 +42,24 @@ function divide_colours(col1, col2) {
 
 function view() {
     var camera_size = [30,30];
+    // number of screen square dedicated to black borders
     var screen_offset = [2,2];
+    // current top-left corner of the camera
     var camera_corner = [0,0];
     var status_colors = new Rainbow();
     status_colors.setSpectrum("red", "yellow", "green");
     var log_len = 12;
     var log_start_pos = 21;
     var max_message_len = 20;
+    var menu_size = [30,25];
+    // size of the border of the menu
+    var menu_border = [1,1];
+
     // This prevents getting player actions from keys while an animation is not done yet
     var animation_lock = false;
+    // ID of the last displayed menu.
+    var displayed_menu = -1;
+
 
     function print_logs() {
         var line_skips = 0;
@@ -98,6 +107,13 @@ function view() {
         return pos;
     }
 
+    function display_menus() {
+        for (var i = 0; i < game.menu_stack.length; i++) {
+            if (game.menu_stack[i].id > displayed_menu) {
+
+            }
+        }
+    }
     function draw_game_object(entity, x, y) {
         repr = entity.next_repr();
         if (repr === null) {
@@ -175,7 +191,18 @@ function view() {
     bind_keys = function() {
         // up, down, left, right
         var keys_to_movement = {"38":[0, -1],"40":[0, 1], "37":[-1, 0], "39":[1, 0]};
-
+        function menu_mode_keys(e) {
+            if (keys_to_movement[""+e.keyCode] !== undefined) {
+                game.next_action = {name:"move_menu", args:{"direction": keys_to_movement[""+e.keyCode][1]}}
+            }
+            if (e.keyCode === 13) {
+                game.next_action = {name:"select"}
+            }
+            // 'a' to 'z' maybe change to 'a' to 'Z' eventually
+            if (e.charCode >= 97 <= 122) {
+                game.next_action = {name:"menu_char_select", args:{"char":String.fromCharCode(e.charCode)}}
+            }
+        }
         function game_mode_keys(e) {
             if(!game.waiting_for_player || animation_lock) {
                 return
@@ -208,6 +235,9 @@ function view() {
         var sidebar_container = sidebar_display.getContainer();
         sidebar_container.classList.add("sidebar-display");
         document.body.appendChild(sidebar_container);
+        var menu_container = menu_display.getContainer();
+        menu_container.classList.add("menu-display");
+        document.body.appendChild(menu_container);
         bind_keys();
     }
 
@@ -219,6 +249,26 @@ function view() {
         forceSquareRatio:true,
     }
     var map_display = new ROT.Display(map_options);
+
+    var menu_options = {
+        width: menu_size[0] + menu_border[0],
+        height: menu_size[1] + menu_border[1],
+        fontSize: 14,
+        forceSquareRatio:false,
+    }
+    var menu_display = new ROT.Display(menu_options);
+    menu_element = menu_display.getContainer();
+    menu_element.style.position = "absolute";
+    menu_element.style.top = "27px";
+    // draw the borders
+    for (var i = 0; i < menu_size[0]; i++) {
+        for (var j = 0; j < menu_size[1]; j++) {
+            if (i < menu_border[0] || i - menu_border[0] >= menu_size[0] ||
+                j < menu_border[1] || j - menu_border[1] >= menu_size[1]) {
+                menu_display.draw(i,j," ", "#777777");
+            }
+        }
+    }
 
     var sidebar_options = {
         width: 22,

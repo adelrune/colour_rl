@@ -42,17 +42,34 @@ function make_round_selection(radius, ignore_walls) {
         }
     }
 }
-
+// counter for the unique menu ids.
+var menu_id_counter = 0;
 // A menu is some header text displayed in columns, some options
 // which are {text:[], description:"", value:""}
 // A menu has a selected item for which description is displayed.
-// when the game.select() function is called, the
+// when the game.select() the callback function is called
 function Menu(title, options) {
+    this.id = menu_id_counter;
+    menu_id_counter +=1;
     this.title = title
     // an option is an object of the format {text:[], }
     this.options = options;
     // selected item is 0 by default
     this.selection = 0;
+    this.move_selection = function(amount) {
+        this.selection += amount;
+        this.selection %= this.options.length;
+    }
+    // converts letter to array index, if its out of bound return false
+    // else sets the selection to the right thing.
+    this.char_select = function(char) {
+        var num = char.charCodeAt(0) -97;
+        if (num > this.options.length) {
+            return false;
+        }
+        this.selection = num;
+        return true;
+    }
 }
 
 function Game() {
@@ -67,6 +84,7 @@ function Game() {
     this.focus = null;
     this.message_log = ["Welcome to colour_rl"];
     this.current_mode = GAME;
+    this.menu_stack = [];
     this.selection_callback = null;
     // Function that calls a callback with the positions selected by the cursor.
     this.selection_function = null;
@@ -83,11 +101,30 @@ function Game() {
             this.selection_limit = args.limit
             // default selection is single tile.
             this.selection_function = select_func !== undefined ? select_func : single_tile_selection;
+        } else if (mode === MENU) {
+            this.menu_stack.push(args.menu);
         }
         this.selection_callback = callback;
         this.current_mode = mode;
         // resets the next action
         this.next_action.name = "";
+    }
+    this.move_menu = function(args) {
+        if (this.current_mode !== menu) {
+            return;
+        }
+        var active_menu = this.menu_stack[this.menu_stack.length-1];
+        active_menu.move_selection(args.direction);
+    }
+    this.menu_char_select = function(args) {
+        if (this.current_mode !== menu) {
+            return;
+        }
+        var active_menu = this.menu_stack[this.menu_stack.length-1];
+        if (active_menu.char_select(args.char)) {
+            // if the letter is in the options, we select it.
+            this.select();
+        }
     }
     // moves the focus of the game in selection mode.
     this.move_focus = function(args) {

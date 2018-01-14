@@ -51,7 +51,7 @@ function view() {
     var log_len = 12;
     var log_start_pos = 21;
     var max_message_len = 20;
-    var menu_size = [30,25];
+    var menu_size = [55,25];
     // size of the border of the menu
     var menu_border = [1,1];
 
@@ -107,12 +107,29 @@ function view() {
         return pos;
     }
 
-    function display_menus() {
-        for (var i = 0; i < game.menu_stack.length; i++) {
-            if (game.menu_stack[i].id > displayed_menu) {
-
-            }
+    function draw_menu_content(menu) {
+        // This function displays in hardcoded limits right now, should change it for more dynamic behavior
+        menu_display.drawText(menu_border[0] + 1, menu_border[1] + 1, "%c{#FFFFFF}" + menu.title);
+        for (var i = 0; i < menu.options.length; i++) {
+            selected_colour = menu.selection === i ? rgb_to_hex([76,76,34]) : "#000000";
+            // text is the options letter + the options name
+            text = "%b{" + selected_colour + "}" + String.fromCharCode(i+97) + ") " + menu.options[i].text + "%b{}";
+            menu_display.drawText(menu_border[0] + 1, menu_border[1] + 3 + i, text);
         }
+        // clears the line.
+        for (var j=0; j < menu_size[0] - menu_border[0] * 2 ; j++) {
+            menu_display.draw(menu_border[0] + j, menu_border[1] + 4 + i, "");
+        }
+        menu_display.drawText(menu_border[0] + 1, menu_border[1] + 4 + i, menu.options[menu.selection].description);
+    }
+
+    function display_menus() {
+        if (game.menu_stack.length > 0) {
+            draw_menu_content(game.menu_stack[game.menu_stack.length-1]);
+            menu_element.style.zIndex = 1;
+            return;
+        }
+        menu_element.style.zIndex = -1;
     }
     function draw_game_object(entity, x, y) {
         repr = entity.next_repr();
@@ -182,6 +199,9 @@ function view() {
             animation_lock = true;
             play_particles();
         }
+
+        display_menus();
+
         sidebar_display.clear();
         sidebar_display.drawText(0, 3, "health");
         sidebar_display.draw(3 ,4,'❤', "#"+status_colors.colourAt(game.player.health));
@@ -199,7 +219,7 @@ function view() {
                 game.next_action = {name:"select"}
             }
             // 'a' to 'z' maybe change to 'a' to 'Z' eventually
-            if (e.charCode >= 97 <= 122) {
+            if (e.charCode >= 97 && e.charCode <= 122) {
                 game.next_action = {name:"menu_char_select", args:{"char":String.fromCharCode(e.charCode)}}
             }
         }
@@ -222,7 +242,7 @@ function view() {
                 game.next_action = {name:"select"}
             }
         }
-        var mode_bindings = [game_mode_keys, selection_mode_keys];
+        var mode_bindings = [game_mode_keys, selection_mode_keys, menu_mode_keys];
         $("body").keydown(function(e) {
             mode_bindings[game.current_mode](e);
         });
@@ -257,15 +277,17 @@ function view() {
         forceSquareRatio:false,
     }
     var menu_display = new ROT.Display(menu_options);
-    menu_element = menu_display.getContainer();
+    var menu_element = menu_display.getContainer();
     menu_element.style.position = "absolute";
     menu_element.style.top = "27px";
+    menu_element.style.left = "27px";
+    menu_element.style.zIndex = "-1";
     // draw the borders
     for (var i = 0; i < menu_size[0]; i++) {
         for (var j = 0; j < menu_size[1]; j++) {
-            if (i < menu_border[0] || i - menu_border[0] >= menu_size[0] ||
-                j < menu_border[1] || j - menu_border[1] >= menu_size[1]) {
-                menu_display.draw(i,j," ", "#777777");
+            if (i < menu_border[0] || i >= menu_size[0] - menu_border[0] ||
+                j < menu_border[1] || j >= menu_size[1] - menu_border[1]) {
+                menu_display.draw(i,j,"o", "#999999","#999999");
             }
         }
     }

@@ -42,23 +42,23 @@ function make_round_selection(radius, ignore_walls) {
         }
     }
 }
-// counter for the unique menu ids.
-var menu_id_counter = 0;
 // A menu is some header text displayed in columns, some options
-// which are {text:[], description:"", value:""}
+// which are {text:"", description:"", value:""}
 // A menu has a selected item for which description is displayed.
 // when the game.select() the callback function is called
 function Menu(title, options) {
-    this.id = menu_id_counter;
-    menu_id_counter +=1;
     this.title = title
-    // an option is an object of the format {text:[], }
+    // an option is an object of the format {text:"", description:"", value:""}
     this.options = options;
     // selected item is 0 by default
     this.selection = 0;
     this.move_selection = function(amount) {
         this.selection += amount;
+        if (this.selection < 0) {
+            this.selection = this.options.length - this.selection;
+        }
         this.selection %= this.options.length;
+        console.log(this.selection);
     }
     // converts letter to array index, if its out of bound return false
     // else sets the selection to the right thing.
@@ -110,14 +110,14 @@ function Game() {
         this.next_action.name = "";
     }
     this.move_menu = function(args) {
-        if (this.current_mode !== menu) {
+        if (this.current_mode !== MENU) {
             return;
         }
         var active_menu = this.menu_stack[this.menu_stack.length-1];
         active_menu.move_selection(args.direction);
     }
     this.menu_char_select = function(args) {
-        if (this.current_mode !== menu) {
+        if (this.current_mode !== MENU) {
             return;
         }
         var active_menu = this.menu_stack[this.menu_stack.length-1];
@@ -150,7 +150,7 @@ function Game() {
         // a call to select()
         this.selection_callback();
     }
-
+    var that = this;
     this.init = function() {
         this.current_scheduler = this.current_map.scheduler;
         this.player = new Actor([2,2], 100, "@", "player");
@@ -161,8 +161,8 @@ function Game() {
         this.current_scheduler.add("player", true, 0);
         this.current_scheduler.add(ennemy, true, 1);
         this.current_actor = this.current_scheduler.next();
-
         this.current_map.update_state();
+        this.change_mode(MENU, function(){that.change_mode(GAME);that.menu_stack.pop()}, null, {"menu": new Menu("Welcome to colour_rl", [{text:"Option 1",description:"A description",value:"aaa"},{text:"Option 2",description:"Another description",value:"bbb"}])});
     }
 }
 

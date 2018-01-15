@@ -108,19 +108,21 @@ function view() {
     }
 
     function draw_menu_content(menu) {
+        // clears the line.
+        for (var i=0; i < menu_size[0] - menu_border[0] * 2 ; i++) {
+            for (var j=0; j < menu_size[1] - menu_border[1] * 2 ; j++) {
+                menu_display.draw(menu_border[0] + i, menu_border[1] + j, "","#FFFFFF",rgb_to_hex([35,35,35]));
+            }
+        }
         // This function displays in hardcoded limits right now, should change it for more dynamic behavior
-        menu_display.drawText(menu_border[0] + 1, menu_border[1] + 1, "%c{#FFFFFF}" + menu.title);
+        menu_display.drawText(menu_border[0] + 1, menu_border[1] + 1, "%b{"+rgb_to_hex([35,35,35])+"}"+"%c{#FFFFFF}" + menu.title);
         for (var i = 0; i < menu.options.length; i++) {
-            selected_colour = menu.selection === i ? rgb_to_hex([76,76,34]) : "#000000";
+            selected_colour = menu.selection === i ? rgb_to_hex([76,76,34]) : rgb_to_hex([35,35,35]);
             // text is the options letter + the options name
             text = "%b{" + selected_colour + "}" + String.fromCharCode(i+97) + ") " + menu.options[i].text + "%b{}";
             menu_display.drawText(menu_border[0] + 1, menu_border[1] + 3 + i, text);
         }
-        // clears the line.
-        for (var j=0; j < menu_size[0] - menu_border[0] * 2 ; j++) {
-            menu_display.draw(menu_border[0] + j, menu_border[1] + 4 + i, "");
-        }
-        menu_display.drawText(menu_border[0] + 1, menu_border[1] + 4 + i, menu.options[menu.selection].description);
+        menu_display.drawText(menu_border[0] + 1, menu_border[1] + 4 + i, "%b{"+rgb_to_hex([35,35,35])+"}" + menu.options[menu.selection].description);
     }
 
     function display_menus() {

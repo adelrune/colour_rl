@@ -82,7 +82,7 @@ function Game() {
     this.waiting_for_player = true;
     this.current_actor = null;
     this.focus = null;
-    this.message_log = ["Welcome to colour_rl"];
+    this.message_log = [];
     this.current_mode = GAME;
     this.menu_stack = [];
     this.selection_callback = null;

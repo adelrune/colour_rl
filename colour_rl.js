@@ -156,10 +156,8 @@ function Game() {
         this.player = new Actor([2,2], 100, "@", "player");
         this.focus = this.player;
         ennemy = new NPC([1,1], 21, "e", "ennemy");
-        this.current_map.entities.push(this.player);
-        this.current_map.entities.push(ennemy);
-        this.current_scheduler.add("player", true, 0);
-        this.current_scheduler.add(ennemy, true, 1);
+        this.current_map.add_entity(this.player);
+        this.current_map.add_entity(ennemy);
         this.current_actor = this.current_scheduler.next();
         this.current_map.update_state();
         this.change_mode(MENU, function(){that.change_mode(GAME);that.menu_stack.pop()}, null, {"menu": new Menu("Welcome to colour_rl", [{text:"Option 1",description:"A description",value:"aaa"},{text:"Option 2",description:"Another description",value:"bbb"}])});
@@ -175,7 +173,7 @@ function game_mode_loop() {
     if(!game.current_map.animation_finished()) {
         return;
     }
-    if(game.current_actor === "player") {
+    if (game.current_actor === game.player) {
         if(game.next_action.name === "") {
             return;
         }

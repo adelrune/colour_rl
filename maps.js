@@ -14,6 +14,10 @@ function Map(grid) {
     this.fov = new ROT.FOV.PreciseShadowcasting(function(x, y) {
         return that.grid[x] && that.grid[x][y] ? that.grid[x][y].light_passes() : false;
     });
+    this.add_entity = function(entity) {
+        this.entities.push(entity)
+        this.scheduler.add(entity, true);
+    }
     this.get_entity_square = function(entity) {
         return this.grid[entity.position[0]][entity.position[1]];
     }
@@ -125,3 +129,9 @@ function check_collisions(map, new_pos) {
 
 //grid = get_layout_from_rot_generator(new ROT.Map.EllerMaze(600,310));
 grid = get_layout_from_rot_generator(new ROT.Map.Arena(600,310));
+
+
+// this is going to be some ugly declarative code.
+function generate_map() {
+
+}

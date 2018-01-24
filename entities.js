@@ -1,3 +1,10 @@
+// shorthand constructor for creating reprs. Long form is more readable...
+function repr(symbol, colour, bg) {
+    colour = colour === undefined ? [255,255,255] : colour;
+    bg = bg === undefined ? [35,35,35] : bg;
+    return {"symbol": symbol, "colour":colour, "bg":bg}
+}
+
 function GameObject(position, has_collision, has_default_interaction, repr, animation) {
     // Will the player trigger an action by trying to walk in that thing.
     this.has_default_interaction = has_default_interaction;
@@ -54,6 +61,18 @@ var Animation = function(frames, loop) {
     this.index = 0;
     this.loop = loop;
     this.finished = false;
+}
+
+// creates a transition animation between chars in a string and between different colours.
+function create_transition_animation(successive_chars, frames_per_char, fg_tints_array, bg_tints_array, add_reverse_transition, loop) {
+    var animation_frames = [];
+    var animation_len = successive_chars.length * frames_per_char;
+    var colour_transition = new Rainbow();
+    colour_transition.setSpectrumByArray(tints_array.map(rgb_to_hex));
+    colour_transition.setNumberRange(successive_chars.length * frames_per_char);
+    for (var i = 0; i < animation_len; i++) {
+        animation_frames.append(repr())
+    }
 }
 
 Animation.prototype.next = function() {
@@ -121,17 +140,17 @@ function make_ability(args) {
 
 }*/
 
-function Floor(repr) {
-    GameObject.call(this, null, false, false, repr);
+function Floor(repr, animation) {
+    GameObject.call(this, null, false, false, repr, animation);
 }
 
-function Wall(repr) {
-    GameObject.call(this, null, true, false, repr);
+function Wall(repr, animation) {
+    GameObject.call(this, null, true, false, repr, animation);
 }
 
-function Actor(position, health, repr, name) {
+function Actor(position, health, repr, name, animation) {
     // Actor has collision and default interaction
-    GameObject.call(this, position, true, true, repr);
+    GameObject.call(this, position, true, true, repr, animation);
     this.health = health;
     this.move_delay = 10;
     this.name = name;
@@ -163,8 +182,8 @@ function Actor(position, health, repr, name) {
     }
 }
 
-function NPC(position, health, repr, name) {
-    Actor.call(this, position, health, repr, name);
+function NPC(position, health, repr, name, animation) {
+    Actor.call(this, position, health, repr, name, animation);
     this.move_delay = 10;
     this.get_next_action = function() {
         if(!check_collisions(game.current_map, [1+this.position[0],0+this.position[1]])) {

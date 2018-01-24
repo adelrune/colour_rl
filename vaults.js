@@ -30,6 +30,7 @@ tile_correspondance = {
     // magic portal, should probably be something else.
 
     transformation = "✶✸✷✹✺";
+    frames = []
 
     '✶': function portal() {
         var animation = new Animation([repr('✶'), repr('✸'), ], true);

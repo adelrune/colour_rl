@@ -1,7 +1,7 @@
 //Thanks to dcss for the vaults concept
 
-// A vault consists of terrain that is shortcoded in only ascii (may need a theme system for coloring/tiling different levels)
-// a spawner function that dictates what entities are immediately present at vault generation
+// A vault consists of terrain/entities that are shortcoded in only ascii (may need a theme system for coloring/tiling different levels)
+// a spawner function that dictates what additional entities are immediately present at vault generation (for when
 // and an item layer ?
 intro_vaults = {
 
@@ -22,22 +22,16 @@ intro_vaults = {
         ['|.............|']
         ['|.............|']
         ['+—————————————+']
-
     ]
 }
 
 tile_correspondance = {
     // magic portal, should probably be something else.
-
-    transformation = "✶✸✷✹✺";
-    frames = []
-
     '✶': function portal() {
-        var animation = new Animation([repr('✶'), repr('✸'), ], true);
-        var portal = new Floor(repr('✶'), )
-    },
-
-
+        var animation = create_transition_animation("✶✸✷✹✺", 3, [[255,0,0], [0,255,0], [0,0,255]], [[0,0,0]], true, true);
+        var portal = new Floor(repr('✶'), animation);
+        // TODO: add the actual teleportation mechanics of the portal
+    }
 }
 
 function get_tile_from_shorthand(symbol) {

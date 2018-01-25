@@ -63,24 +63,33 @@ var Animation = function(frames, loop) {
     this.finished = false;
 }
 
-// creates a transition animation between chars in a string and between different colours.
-function create_transition_animation(successive_chars, frames_per_char, fg_tints_array, bg_tints_array, add_reverse_transition, loop) {
-    var animation_frames = [];
-    var animation_len = successive_chars.length * frames_per_char;
-    var colour_transition = new Rainbow();
-    colour_transition.setSpectrumByArray(tints_array.map(rgb_to_hex));
-    colour_transition.setNumberRange(successive_chars.length * frames_per_char);
-    for (var i = 0; i < animation_len; i++) {
-        animation_frames.append(repr())
-    }
-}
-
 Animation.prototype.next = function() {
     var repr = this.frames[this.index];
     this.index += 1;
     this.finished = this.index == this.frames.length && !this.loop;
     this.index %= this.frames.length;
     return repr;
+}
+
+// creates a transition animation between chars in a string and between different colours.
+function create_transition_animation(successive_chars, frames_per_char, fg_tints_array, bg_tints_array, add_reverse_transition, loop) {
+    var animation_frames = [];
+    var animation_len = successive_chars.length * frames_per_char;
+    var fg_rainbow = new Rainbow();
+    var bg_rainbow = new Rainbow();
+    fg_rainbow.setSpectrumByArray(fg_tints_array.map(rgb_to_hex));
+    fg_rainbow.setNumberRange(successive_chars.length * frames_per_char);
+    bg_rainbow.setSpectrumByArray(bg_tints_array.map(rgb_to_hex));
+    bg_rainbow.setNumberRange(successive_chars.length * frames_per_char);
+
+    for (var i = 0; i < animation_len; i++) {
+        var char = successive_chars[Math.floor(i / frames_per_char)];
+        animation_frames.push(repr(char, fg_rainbow.colourAt(i), bg_rainbow.colourAt(i)));
+    }
+    if (add_reverse_transition) {
+        animation_frames.concat(animation_frames.slice().reverse());
+    }
+    return new Animation(animation_frames, loop)
 }
 
 var Ability = function(base_delay, apply) {

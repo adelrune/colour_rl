@@ -75,7 +75,7 @@ function Menu(title, options) {
 function Game() {
     this.player = null;
     this.current_scheduler = null;
-    this.current_map = new Map(grid);
+    this.current_map = generate_first_map();
     // action that should be called. This is basically the controller.
     this.next_action = {name:"", args:{}};
     // This is the lock used to know if we are waiting for user input to continue
@@ -85,6 +85,12 @@ function Game() {
     this.message_log = [];
     this.current_mode = GAME;
     this.menu_stack = [];
+
+    // seeds and setups the rng.
+    this.seed = Math.random()*10e17;
+    this.rng = ROT.RNG.clone();
+    this.rng.setSeed(seed);
+
     this.selection_callback = null;
     // Function that calls a callback with the positions selected by the cursor.
     this.selection_function = null;

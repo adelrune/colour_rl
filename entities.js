@@ -89,7 +89,7 @@ function create_transition_animation(successive_chars, frames_per_char, fg_tints
     if (add_reverse_transition) {
         animation_frames.concat(animation_frames.slice().reverse());
     }
-    return new Animation(animation_frames, loop)
+    return new Animation(animation_frames, loop);
 }
 
 var Ability = function(base_delay, apply) {
@@ -119,6 +119,7 @@ function make_ability(args) {
                 [{"symbol": '§', "colour":[13,0,0]}, {"symbol": '§', "colour":[26,0,0]}],
                 function() {
                     if (this.frames.length == 2) {
+                        // No need for identical seed for particle animations
                         factor = Math.floor(Math.random() * 15) + 5;
                         for (var i = 0; i < factor; i++) {
                             var ichelou = i-5;
@@ -155,6 +156,13 @@ function Floor(repr, animation) {
 
 function Wall(repr, animation) {
     GameObject.call(this, null, true, false, repr, animation);
+}
+
+// prop is a thing that has infinite health and a default interaction and optionally an action selection function
+function Prop(position, collision, default_interaction, repr, animation, action_function) {
+    GameObject.call(this, position, collision, true, repr, animation);
+    this.default_interaction = default_interaction
+    this.get_next_action = action_function ? action_function : function(args){};
 }
 
 function Actor(position, health, repr, name, animation) {

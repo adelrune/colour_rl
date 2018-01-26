@@ -132,6 +132,17 @@ grid = get_layout_from_rot_generator(new ROT.Map.Arena(600,310));
 
 
 // this is going to be some ugly declarative code.
-function generate_map() {
-
+function generate_first_map() {
+    // intro vaults are (for now) full map vaults.
+    var grid = [];
+    var entities = [];
+    var map = intro_vaults[0]
+    for (var i = 0; i < map["map"].length; i++) {
+        grid.push([]);
+        for (var j = 0; j < map["map"][i].length; j++) {
+            objs = get_objects_from_shorthand(map["map"][i][j])
+            grid[i].push(objs["terrain"]);
+            entities.push(objs["entity"])
+        }
+    }
 }

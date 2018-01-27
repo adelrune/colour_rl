@@ -1,8 +1,22 @@
-function Map(grid) {
+function Map(grid, entities) {
     this.grid = grid;
     // size in x and y
     this.dimensions = [grid.length, grid[0].length];
+
+    this.scheduler = new ROT.Scheduler.Action();
+
+    entities = entities === undefined ? [] : entities;
     this.entities = [];
+
+    this.add_entity = function(entity) {
+        this.entities.push(entity)
+        this.scheduler.add(entity, true);
+    }
+
+    for (var i = 0; i < entities.length; i++) {
+        this.add_entity(entities[i]);
+    }
+
     // Particle effects that have yet to be played.
     this.particles = [];
     // The animation is finished if there are no particles to play.
@@ -14,10 +28,7 @@ function Map(grid) {
     this.fov = new ROT.FOV.PreciseShadowcasting(function(x, y) {
         return that.grid[x] && that.grid[x][y] ? that.grid[x][y].light_passes() : false;
     });
-    this.add_entity = function(entity) {
-        this.entities.push(entity)
-        this.scheduler.add(entity, true);
-    }
+
     this.get_entity_square = function(entity) {
         return this.grid[entity.position[0]][entity.position[1]];
     }
@@ -71,7 +82,7 @@ function Map(grid) {
         }
         // visibility, selection and health in the same loop for entities
         for (var i = 0; i < this.entities.length; i++) {
-            if (this.entities[i].health > 0) {
+            if (this.entities[i].health > 0 || this.entities[i].health === null) {
                 alive.push(this.entities[i]);
                 this.entities[i].visible = false;
                 var square = this.get_entity_square(this.entities[i]);
@@ -86,8 +97,6 @@ function Map(grid) {
         }
         this.entities = alive;
     }
-
-    this.scheduler = new ROT.Scheduler.Action();
 }
 
 function get_layout_from_rot_generator(rot_generator, num_calls) {
@@ -137,12 +146,17 @@ function generate_first_map() {
     var grid = [];
     var entities = [];
     var map = intro_vaults[0]
-    for (var i = 0; i < map["map"].length; i++) {
+
+    for (var j = 0; j < map["map"][0].length; j++) {
         grid.push([]);
-        for (var j = 0; j < map["map"][i].length; j++) {
-            objs = get_objects_from_shorthand(map["map"][i][j])
-            grid[i].push(objs["terrain"]);
-            entities.push(objs["entity"])
+        for (var i = 0; i < map["map"].length; i++) {
+            objs = get_objects_from_shorthand(map["map"][i].charAt(j), [j,i]);
+            grid[j].push(objs["terrain"]);
+            if (objs["entity"]) {
+                entities.push(objs["entity"]);
+                console.log(entities);
+            }
         }
     }
+    return new Map(grid, entities);
 }

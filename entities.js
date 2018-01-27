@@ -78,13 +78,13 @@ function create_transition_animation(successive_chars, frames_per_char, fg_tints
     var fg_rainbow = new Rainbow();
     var bg_rainbow = new Rainbow();
     fg_rainbow.setSpectrumByArray(fg_tints_array.map(rgb_to_hex));
-    fg_rainbow.setNumberRange(successive_chars.length * frames_per_char);
+    fg_rainbow.setNumberRange(0, successive_chars.length * frames_per_char);
     bg_rainbow.setSpectrumByArray(bg_tints_array.map(rgb_to_hex));
-    bg_rainbow.setNumberRange(successive_chars.length * frames_per_char);
+    bg_rainbow.setNumberRange(0, successive_chars.length * frames_per_char);
 
     for (var i = 0; i < animation_len; i++) {
         var char = successive_chars[Math.floor(i / frames_per_char)];
-        animation_frames.push(repr(char, fg_rainbow.colourAt(i), bg_rainbow.colourAt(i)));
+        animation_frames.push(repr(char, hex_to_rgb(fg_rainbow.colourAt(i)), hex_to_rgb(bg_rainbow.colourAt(i))));
     }
     if (add_reverse_transition) {
         animation_frames.concat(animation_frames.slice().reverse());
@@ -163,6 +163,7 @@ function Prop(position, collision, default_interaction, repr, animation, action_
     GameObject.call(this, position, collision, true, repr, animation);
     this.default_interaction = default_interaction
     this.get_next_action = action_function ? action_function : function(args){};
+    this.health = null;
 }
 
 function Actor(position, health, repr, name, animation) {

@@ -89,7 +89,7 @@ function Game() {
     // seeds and setups the rng.
     this.seed = Math.random()*10e17;
     this.rng = ROT.RNG.clone();
-    this.rng.setSeed(seed);
+    this.rng.setSeed(this.seed);
 
     this.selection_callback = null;
     // Function that calls a callback with the positions selected by the cursor.
@@ -223,4 +223,4 @@ function game_loop() {
 
 game.init();
 
-setInterval(game_loop, 20);
+setInterval(game_loop, 10);

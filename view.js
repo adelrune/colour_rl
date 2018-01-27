@@ -137,11 +137,14 @@ function view() {
                     j - camera_corner[1] + screen_offset[1],
                     ""
                 );
-                draw_game_object(
-                    game.current_map.grid[i][j],
-                    i - camera_corner[0] + screen_offset[0],
-                    j - camera_corner[1] + screen_offset[1]
-                );
+                // can be false if the map is smaller than the camera
+                if (game.current_map.grid[i] && game.current_map.grid[i][j]) {
+                    draw_game_object(
+                        game.current_map.grid[i][j],
+                        i - camera_corner[0] + screen_offset[0],
+                        j - camera_corner[1] + screen_offset[1]
+                    );
+                }
             }
         }
         // anything else on the map

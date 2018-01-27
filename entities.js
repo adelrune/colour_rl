@@ -57,12 +57,20 @@ var Animation = function(frames, loop) {
     this.frames = frames;
     this.index = 0;
     this.loop = loop;
+    this.last_time_called = performance.now();
     this.finished = false;
 }
 
 Animation.prototype.next = function() {
     var repr = this.frames[this.index];
-    this.index += 1;
+    var now = performance.now();
+    var elapsed = now - this.last_time_called;
+    if (elapsed >= 16) {
+        this.index += 1;
+        this.last_time_called = now;
+    } else {
+        this.last_time_called -= elapsed;
+    }
     this.finished = this.index == this.frames.length && !this.loop;
     this.index %= this.frames.length;
     return repr;

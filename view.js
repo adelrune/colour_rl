@@ -141,34 +141,37 @@ function view() {
         // When this func is entered, length > 0, if it falls to 0 we unlock the animation lock.
         if (game.current_map.particles.length === 0) {
             animation_lock = false;
+            // after the last one, we refresh the display one last time
+            update_display(true);
         }
     }
 
-    update_display = function () {
+    last_particle_state = null;
+    // This function is called a loooooot of times. The state changed notifies it that it should reprint everything
+    // Otherwise it only refreshes the tiles with animations.
+    update_display = function (state_changed) {
 
         camera_corner = get_camera_top_left_corner();
         // map tiles
-        for (var i = camera_corner[0]; i < camera_corner[0] + camera_size[0]; i++) {
-            for (var j = camera_corner[1]; j < camera_corner[1] + camera_size[1]; j++) {
-                // resets dislay
-                map_display.draw(
-                    i - camera_corner[0] + screen_offset[0],
-                    j - camera_corner[1] + screen_offset[1],
-                    ""
-                );
-                // can be false if the map is smaller than the camera
-                if (game.current_map.grid[i] && game.current_map.grid[i][j]) {
-                    draw_game_object(
-                        game.current_map.grid[i][j],
-                        i - camera_corner[0] + screen_offset[0],
-                        j - camera_corner[1] + screen_offset[1]
-                    );
+        if (state_changed) {
+            for (var i = camera_corner[0]; i < camera_corner[0] + camera_size[0]; i++) {
+                for (var j = camera_corner[1]; j < camera_corner[1] + camera_size[1]; j++) {
+                    // resets dislay
+                    //map_display.clear()
+                    // can be false if the map is smaller than the camera
+                    if (game.current_map.grid[i] && game.current_map.grid[i][j]) {
+                        draw_game_object(
+                            game.current_map.grid[i][j],
+                            i - camera_corner[0] + screen_offset[0],
+                            j - camera_corner[1] + screen_offset[1]
+                        );
+                    }
                 }
             }
         }
         // anything else on the map
         for (var i = 0; i < game.current_map.entities.length; i++) {
-            if (position_in_view(game.current_map.entities[i].position)) {
+            if (position_in_view(game.current_map.entities[i].position) && (state_changed || game.current_map.entities[i].animation)) {
                 draw_game_object(
                     game.current_map.entities[i],
                     game.current_map.entities[i].position[0] - camera_corner[0] + screen_offset[0],
@@ -182,12 +185,13 @@ function view() {
             play_particles();
         }
 
-        display_menus();
-
-        sidebar_display.clear();
-        sidebar_display.drawText(0, 3, "health");
-        sidebar_display.draw(3 ,4,'❤', "#"+status_colors.colourAt(game.player.health));
-        print_logs();
+        if (state_changed) {
+            display_menus();
+            sidebar_display.clear();
+            sidebar_display.drawText(0, 3, "health");
+            sidebar_display.draw(3 ,4,'❤', "#"+status_colors.colourAt(game.player.health));
+            print_logs();
+        }
     }
 
     bind_keys = function() {
@@ -283,7 +287,7 @@ function view() {
 
     var sidebar_display = new ROT.Display(sidebar_options);
 
-    update_display();
+    update_display(true);
     init();
 }
 

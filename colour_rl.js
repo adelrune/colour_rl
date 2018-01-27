@@ -177,17 +177,17 @@ var update_display = function(){return};
 function game_mode_loop() {
     // waits for end of animation before doing a move.
     if(!game.current_map.animation_finished()) {
-        return;
+        return false;
     }
     if (game.current_actor === game.player) {
         if(game.next_action.name === "") {
-            return;
+            return false;
         }
         var duration = game.player[game.next_action.name](game.next_action.args);
         // null means invalid action
         if (duration === null) {
             game.next_action.name = "";
-            return;
+            return false;
         }
         game.current_scheduler.setDuration(duration);
         game.next_action.name = "";
@@ -198,15 +198,17 @@ function game_mode_loop() {
         game.current_actor = game.current_scheduler.next();
     }
     game.current_map.update_state();
+    return true;
 }
 
 function selection_mode_loop() {
     if(game.next_action.name === "") {
-        return;
+        return false;
     }
     game[game.next_action.name](game.next_action.args);
     game.next_action.name = "";
     game.current_map.update_state();
+    return true;
 }
 
 var mode_funcs = [];
@@ -217,10 +219,10 @@ mode_funcs[SELECTION] = selection_mode_loop;
 mode_funcs[MENU] = selection_mode_loop;
 
 function game_loop() {
-    update_display();
-    mode_funcs[game.current_mode]();
+    var state_changed = mode_funcs[game.current_mode]();
+    update_display(state_changed);
 }
 
 game.init();
 
-setInterval(game_loop, 10);
+setInterval(game_loop, 8);

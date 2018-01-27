@@ -56,11 +56,26 @@ function add_colours(col1, col2) {
     return col;
 }
 
-function divide_colours(col1, col2) {
-    var col = [];
-    for (var i=0; i<3; i++) {
-        col[i] = col1[i] / col2[i];
-        col[i] = Math.floor(col[i]);
-    }
-    return col;
+// very stupid but 2X faster than stringifying colours
+function rgb_int_encoding(colour) {
+    return colour === undefined ? 0 : colour[0]*1000000 + colour[1]*1000 + colour[2];
 }
+
+// The is called a lot and used to create new lists every time which is why its memoized now
+var divide_colours;
+(function () {
+    cache = {}
+    divide_colours = function (col1, col2) {
+        var param_encoding = rgb_int_encoding(col1) + rgb_int_encoding(col2);
+        if (cache[param_encoding]) {
+            return cache[param_encoding]
+        }
+        var col = [];
+        for (var i=0; i<3; i++) {
+            col[i] = col1[i] / col2[i];
+            col[i] = Math.floor(col[i]);
+        }
+        cache[param_encoding] = col;
+        return col;
+    }
+})();

@@ -55,6 +55,5 @@ var tile_mapping = {
 
 // This function returns the objects genrated by the map shorthand
 function get_objects_from_shorthand(symbol, position) {
-    console.log(symbol);
     return tile_mapping[symbol](position);
 }

@@ -41,7 +41,7 @@ function floor(symbol) {
 var tile_mapping = {
     // magic portal, should probably be something else.
     '✶': function portal(position) {
-        var animation = create_transition_animation("✶✸✷✹✺", 6, [[255,0,0], [0,255,0], [0,0,255]], [[255,0,0], [0,0,255]], true, true);
+        var animation = create_transition_animation("✶✸✷✹✺", 10, [[255,0,255], [255,255,0], [0,255,0], [0,255,255], [0,0,255]], [[35,35,35], [0,0,170], [45,45,255]], true, true);
         // TODO: add the actual teleportation mechanics of the portal
         var portal = new Prop(position, false, function(entity){console.log("telepooooort")}, repr('✶'), animation);
         return {"terrain":new Floor("·"), "entity" : portal};

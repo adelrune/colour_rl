@@ -92,7 +92,7 @@ function create_transition_animation(successive_chars, frames_per_char, fg_tints
         animation_frames.push(repr(char, hex_to_rgb(fg_rainbow.colourAt(i)), hex_to_rgb(bg_rainbow.colourAt(i))));
     }
     if (add_reverse_transition) {
-        animation_frames.concat(animation_frames.slice().reverse());
+        animation_frames = animation_frames.concat(animation_frames.slice().reverse());
     }
     return new Animation(animation_frames, loop);
 }

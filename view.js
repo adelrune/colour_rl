@@ -19,15 +19,17 @@ function view() {
     var displayed_menu = -1;
 
 
+    var first_message_colour = rgb_to_hex([255,255,255]);
+    var message_colour = rgb_to_hex([170,170,170]);
     function print_logs() {
         var line_skips = 0;
         // we want to paint the first message white and the other grey.
         var first = true;
         for (var i = 0; i + line_skips < log_len; i++) {
             if (game.message_log[game.message_log.length - i]) {
-                var colour = first ? [255,255,255] : [170,170,170];
+                var colour = first ? first_message_colour : message_colour;
                 // floor since we already ++ it whatever the len
-                var message = "%c{" + rgb_to_hex(colour) + "}" + game.message_log[game.message_log.length - i];
+                var message = "%c{" + (colour) + "}" + game.message_log[game.message_log.length - i];
 
                 var msg_line_len = Math.floor(message.length / max_message_len);
                 // If we don't have enough lines, we simply don't display the message.
@@ -65,22 +67,24 @@ function view() {
         return pos;
     }
 
+    var menu_text_bg = rgb_to_hex([35,35,35]);
+    var menu_selected_bg = rgb_to_hex([76,76,34]);
     function draw_menu_content(menu) {
         // clears the line.
         for (var i=0; i < menu_size[0] - menu_border[0] * 2 ; i++) {
             for (var j=0; j < menu_size[1] - menu_border[1] * 2 ; j++) {
-                menu_display.draw(menu_border[0] + i, menu_border[1] + j, "","#FFFFFF",rgb_to_hex([35,35,35]));
+                menu_display.draw(menu_border[0] + i, menu_border[1] + j, "","#FFFFFF",menu_text_bg);
             }
         }
         // This function displays in hardcoded limits right now, should change it for more dynamic behavior
-        menu_display.drawText(menu_border[0] + 1, menu_border[1] + 1, "%b{"+rgb_to_hex([35,35,35])+"}"+"%c{#FFFFFF}" + menu.title);
+        menu_display.drawText(menu_border[0] + 1, menu_border[1] + 1, "%b{"+menu_text_bg+"}"+"%c{#FFFFFF}" + menu.title);
         for (var i = 0; i < menu.options.length; i++) {
-            selected_colour = menu.selection === i ? rgb_to_hex([76,76,34]) : rgb_to_hex([35,35,35]);
+            selected_colour = menu.selection === i ? menu_selected_bg : menu_text_bg;
             // text is the options letter + the options name
             text = "%b{" + selected_colour + "}" + String.fromCharCode(i+97) + ") " + menu.options[i].text + "%b{}";
             menu_display.drawText(menu_border[0] + 1, menu_border[1] + 3 + i, text);
         }
-        menu_display.drawText(menu_border[0] + 1, menu_border[1] + 4 + i, "%b{"+rgb_to_hex([35,35,35])+"}" + menu.options[menu.selection].description);
+        menu_display.drawText(menu_border[0] + 1, menu_border[1] + 4 + i, "%b{"+menu_text_bg+"}" + menu.options[menu.selection].description);
     }
 
     function display_menus() {
@@ -91,16 +95,31 @@ function view() {
         }
         menu_element.style.zIndex = -1;
     }
+    // This is called very often, better have a pre instanciated division than creating a new one everytime.
+    var colour_div_factors = [2,2,2];
+    // Pre instanciated selection bg colours.
+    var selection_colours = []
+    for (var i = 0; i < 10; i++) {
+        selection_colours.push([100+i*24,100+i*24,100+i*24])
+    }
     function draw_game_object(entity, x, y) {
         repr = entity.next_repr();
         if (repr === null) {
             return;
         }
-        if (repr.memory) {
-            repr.colour = divide_colours(repr.colour, [2,2,2]);
-            repr.bg = divide_colours(repr.bg, [2,2,2]);
+        var colour = repr.colour;
+        var bg = repr.bg;
+        // sets the bg according to selection amount
+        if (entity.selected) {
+            bg = selection_colours[entity.selected - 1];
         }
-        map_display.draw(x, y, repr["symbol"], rgb_to_hex(repr.colour), rgb_to_hex(repr.bg));
+        // if memory, fade the colour
+        if (repr.memory) {
+            colour = divide_colours(colour, colour_div_factors);
+            bg = divide_colours(bg, colour_div_factors);
+        }
+
+        map_display.draw(x, y, repr["symbol"], rgb_to_hex(colour), rgb_to_hex(bg));
     }
 
     function draw_particle(particle, x, y) {

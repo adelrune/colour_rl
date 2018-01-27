@@ -26,20 +26,17 @@ function GameObject(position, has_collision, has_default_interaction, repr, anim
 
     // gets the next repr in the animation (or the static repr otherwise)
     this.next_repr = function() {
+        var repr;
         if (this.visible) {
-            repr = clone(this.animation !== null ? this.animation.next() : this.repr);
+            repr = this.animation !== null ? this.animation.next() : this.repr;
+            repr.memory = false;
         } else if (this.remembered_as) {
-            repr = clone(this.remembered_as);
+            repr = this.remembered_as;
             // we tell the thing its a memory, display is up to the view.
             repr.memory = true;
         } else {
             // returns null if it doesn't have a valid display
             return null;
-        }
-        if (this.selected) {
-            repr.bg = [100+this.selected*24,100+this.selected*24,100+this.selected*24];
-        } else {
-            repr.bg = repr.bg;
         }
         return repr;
     }
@@ -163,7 +160,7 @@ function Prop(position, collision, default_interaction, repr, animation, action_
     GameObject.call(this, position, collision, true, repr, animation);
     this.default_interaction = default_interaction
     this.get_next_action = action_function ? action_function : function(args){};
-    this.health = null;
+    this.health = Infinity;
 }
 
 function Actor(position, health, repr, name, animation) {

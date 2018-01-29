@@ -153,19 +153,17 @@ function view() {
 
         camera_corner = get_camera_top_left_corner();
         // map tiles
-        if (state_changed) {
-            for (var i = camera_corner[0]; i < camera_corner[0] + camera_size[0]; i++) {
-                for (var j = camera_corner[1]; j < camera_corner[1] + camera_size[1]; j++) {
-                    // resets dislay
-                    //map_display.clear()
-                    // can be false if the map is smaller than the camera
-                    if (game.current_map.grid[i] && game.current_map.grid[i][j]) {
-                        draw_game_object(
-                            game.current_map.grid[i][j],
-                            i - camera_corner[0] + screen_offset[0],
-                            j - camera_corner[1] + screen_offset[1]
-                        );
-                    }
+        for (var i = camera_corner[0]; i < camera_corner[0] + camera_size[0]; i++) {
+            for (var j = camera_corner[1]; j < camera_corner[1] + camera_size[1]; j++) {
+                // resets dislay
+                //map_display.clear()
+                // can be false if the map is smaller than the camera
+                if (game.current_map.grid[i] && game.current_map.grid[i][j] && (state_changed || game.current_map.grid[i][j].animation)) {
+                    draw_game_object(
+                        game.current_map.grid[i][j],
+                        i - camera_corner[0] + screen_offset[0],
+                        j - camera_corner[1] + screen_offset[1]
+                    );
                 }
             }
         }

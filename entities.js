@@ -61,15 +61,14 @@ var Animation = function(frames, loop) {
     this.finished = false;
 }
 
+var framerate = 16;
 Animation.prototype.next = function() {
     var repr = this.frames[this.index];
     var now = performance.now();
     var elapsed = now - this.last_time_called;
-    if (elapsed >= 16) {
-        this.index += 1;
-        this.last_time_called = now;
-    } else {
-        this.last_time_called -= elapsed;
+    if (elapsed >= framerate) {
+        this.index += Math.floor(elapsed/framerate);
+        this.last_time_called += Math.floor(elapsed/framerate) * framerate;
     }
     this.finished = this.index == this.frames.length && !this.loop;
     this.index %= this.frames.length;
@@ -139,7 +138,7 @@ function make_ability(args) {
         }
         for (var i = 0; i < affected.length; i++) {
             affected[i].health -= 5;
-            game.message_log.push(affected[i].name + " is engulfed in flames " + " for "+5+"damage");
+            game.message_log.push(affected[i].name + " is engulfed in flames " + " for "+5+" damage");
         }
         game.change_mode(GAME)
         return 5
@@ -164,9 +163,10 @@ function Wall(repr, animation) {
 }
 
 // prop is a thing that has infinite health and a default interaction and optionally an action selection function
-function Prop(position, collision, default_interaction, repr, animation, action_function) {
+function Prop(position, collision, default_interaction, repr, animation, name, action_function) {
     GameObject.call(this, position, collision, true, repr, animation);
     this.default_interaction = default_interaction;
+    this.name = name;
     this.get_next_action = action_function ? action_function : function(args){return 100000000};
     this.health = Infinity;
 }
@@ -202,6 +202,10 @@ function Actor(position, health, repr, name, animation) {
     this.use_ability = function(args) {
         var ability = make_ability(args);
         return ability.apply(args);
+    }
+    this.say = function (args) {
+        game.message_log.push(args["message"]);
+        return this.move_delay;
     }
 }
 

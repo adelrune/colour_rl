@@ -146,13 +146,13 @@ function view() {
         }
     }
 
-    last_particle_state = null;
     // This function is called a loooooot of times. The state changed notifies it that it should reprint everything
     // Otherwise it only refreshes the tiles with animations.
     update_display = function (state_changed) {
 
         camera_corner = get_camera_top_left_corner();
         // map tiles
+        //console.log(state_changed);
         if (state_changed) {
             for (var i = camera_corner[0]; i < camera_corner[0] + camera_size[0]; i++) {
                 for (var j = camera_corner[1]; j < camera_corner[1] + camera_size[1]; j++) {

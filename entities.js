@@ -166,8 +166,8 @@ function Wall(repr, animation) {
 // prop is a thing that has infinite health and a default interaction and optionally an action selection function
 function Prop(position, collision, default_interaction, repr, animation, action_function) {
     GameObject.call(this, position, collision, true, repr, animation);
-    this.default_interaction = default_interaction
-    this.get_next_action = action_function ? action_function : function(args){};
+    this.default_interaction = default_interaction;
+    this.get_next_action = action_function ? action_function : function(args){return 100000000};
     this.health = Infinity;
 }
 

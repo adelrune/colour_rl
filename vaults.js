@@ -28,7 +28,7 @@ var intro_vaults = [{
         '|······~······|',
         '|···ý··~··ý···|',
         '|······~······|',
-        '|······~······|',
+        '|······~······|'
     ]
 }];
 
@@ -45,6 +45,12 @@ function floor(symbol, animation) {
     }
 }
 
+// If the animations needs to be shared, they can be preinstanciated here.
+var synced_animations = {
+    '✶': create_transition_animation("✶✸✷✹✺", 10, [[255,0,255], [255,255,0], [0,255,0], [0,255,255], [0,0,255]].reverse(), [[35,35,35], [0,0,170], [45,45,255]], true, true),
+    'ߚ': create_transition_animation("ߚߚߚߚߚ", 10, [[255,255,255],[255,255,255]], [[35,35,35], [0,0,170], [45,45,255]], true, true),
+    'ý': create_transition_animation("ýýýýý", 10, [[255,255,255],[255,255,255]], [[35,35,35], [0,0,170], [45,45,255]], true, true)
+}
 // this is the mapping from a simple character to an object {'terrain':terrain, 'entity':entity}.
 var tile_mapping = {
     // magic portal, should probably be something else.
@@ -63,12 +69,6 @@ var tile_mapping = {
 
 }
 
-// If the animations needs to be shared, they can be preinstanciated here.
-var synced_animations = {
-    '✶': create_transition_animation("✶✸✷✹✺", 10, [[255,0,255], [255,255,0], [0,255,0], [0,255,255], [0,0,255]].reverse(), [[35,35,35], [0,0,170], [45,45,255]], true, true),
-    'ߚ': create_transition_animation("ߚߚߚߚߚ", 10, [[255,255,255],[255,255,255]], [[35,35,35], [0,0,170], [45,45,255]], true, true),
-    'ý': create_transition_animation("ýýýýý", 10, [[255,255,255],[255,255,255]], [[35,35,35], [0,0,170], [45,45,255]], true, true)
-}
 
 // This function returns the objects genrated by the map shorthand
 function get_objects_from_shorthand(symbol, position) {

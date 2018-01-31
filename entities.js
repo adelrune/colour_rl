@@ -209,10 +209,10 @@ function Actor(position, health, repr, name, animation) {
     }
 }
 
-function NPC(position, health, repr, name, animation) {
+function NPC(position, health, repr, name, animation, get_next_action) {
     Actor.call(this, position, health, repr, name, animation);
     this.move_delay = 10;
-    this.get_next_action = function() {
+    this.get_next_action = get_next_action !== undefined ? get_next_action : function() {
         if(!check_collisions(game.current_map, [1+this.position[0],0+this.position[1]])) {
             return this.move({"map":game.current_map, movement:[1,0]});
         } else {

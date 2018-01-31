@@ -159,7 +159,7 @@ function Game() {
     var that = this;
     this.init = function() {
         this.current_scheduler = this.current_map.scheduler;
-        this.player = new Actor([2,2], 100, "@", "player");
+        this.player = new Actor([7,23], 100, "@", "player");
         this.focus = this.player;
         ennemy = new NPC([1,1], 21, "e", "ennemy");
         this.current_map.add_entity(this.player);

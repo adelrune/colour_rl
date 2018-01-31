@@ -11,7 +11,7 @@ var intro_vaults = [{
         '|·············|',
         '|·············|',
         '|···ý··ý··ý···|',
-        '|·············|',
+        '|······R······|',
         '|···ý·ߚ✶ߚ·ý···|',
         '|······~······|',
         '|······~······|',
@@ -28,7 +28,8 @@ var intro_vaults = [{
         '|······~······|',
         '|···ý··~··ý···|',
         '|······~······|',
-        '|······~······|'
+        '|······~······|',
+        '+—————————————+'
     ]
 }];
 
@@ -42,6 +43,14 @@ function wall(symbol, animation) {
 function floor(symbol, animation) {
     return function() {
         return {"terrain":new Floor(symbol, animation)};
+    }
+}
+
+// short function for instanciating creatures at the right place with standard floor under it.
+function creature(symbol, name, floor) {
+    return function(position) {
+        floor = floor === undefined ? new Floor('·'): floor
+        return {"terrain":floor, "entity":creatures[symbol][name](position)};
     }
 }
 
@@ -65,7 +74,8 @@ var tile_mapping = {
     '|': wall('|'),
     'ߚ': wall('ߚ', synced_animations['ߚ']),
     'ý': wall('ý', synced_animations['ý']),
-    '~': floor('~')
+    '~': floor('~'),
+    'R': creature('R', 'head_runist')
 
 }
 

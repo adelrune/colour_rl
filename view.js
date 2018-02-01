@@ -150,12 +150,15 @@ function view() {
     // Otherwise it only refreshes the tiles with animations.
     update_display = function (state_changed) {
 
+        if (state_changed) {
+            map_display.clear()
+        }
+
         camera_corner = get_camera_top_left_corner();
         // map tiles
         for (var i = camera_corner[0]; i < camera_corner[0] + camera_size[0]; i++) {
             for (var j = camera_corner[1]; j < camera_corner[1] + camera_size[1]; j++) {
                 // resets dislay
-                //map_display.clear()
                 // can be false if the map is smaller than the camera
                 if (game.current_map.grid[i] && game.current_map.grid[i][j] && (state_changed || game.current_map.grid[i][j].animation)) {
                     draw_game_object(

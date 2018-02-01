@@ -115,6 +115,15 @@ function Game() {
         // resets the next action
         this.next_action.name = "";
     }
+
+    this.change_map = function(new_map, new_player_position) {
+        this.current_map.remove_entity(this.player);
+        this.player.position = new_player_position;
+        new_map.add_entity(this.player);
+        this.current_map = new_map;
+        this.current_scheduler = new_map.scheduler;
+    }
+
     this.move_menu = function(args) {
         if (this.current_mode !== MENU) {
             return;

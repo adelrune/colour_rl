@@ -13,6 +13,11 @@ function Map(grid, entities) {
         this.scheduler.add(entity, true);
     }
 
+    this.remove_entity = function(entity) {
+        this.entities.splice(this.entities.indexOf(entity), 1);
+        this.scheduler.remove(entity);
+    }
+
     for (var i = 0; i < entities.length; i++) {
         this.add_entity(entities[i]);
     }
@@ -160,3 +165,5 @@ function generate_first_map() {
     }
     return new Map(grid, entities);
 }
+
+var second_map = new Map(get_layout_from_rot_generator(new ROT.Map.EllerMaze(600,310)));

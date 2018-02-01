@@ -56,7 +56,7 @@ function creature(symbol, name, floor) {
 
 // If the animations needs to be shared, they can be preinstanciated here.
 var synced_animations = {
-    '✶': create_transition_animation("✶✸✷✹✺", 10, [[255,0,255], [255,255,0], [0,255,0], [0,255,255], [0,0,255]].reverse(), [[35,35,35], [0,0,170], [45,45,255]], true, true),
+    '✶': create_transition_animation("✶✷✹✸✺", 10, [[255,0,255], [255,255,0], [0,255,0], [0,255,255], [0,0,255]].reverse(), [[35,35,35], [0,0,170], [45,45,255]], true, true),
     'ߚ': create_transition_animation("ߚߚߚߚߚ", 10, [[255,255,255],[255,255,255]], [[35,35,35], [0,0,170], [45,45,255]], true, true),
     'ý': create_transition_animation("ýýýýý", 10, [[255,255,255],[255,255,255]], [[35,35,35], [0,0,170], [45,45,255]], true, true)
 }
@@ -65,7 +65,7 @@ var tile_mapping = {
     // magic portal, should probably be something else.
     '✶': function portal(position) {
         // TODO: add the actual teleportation mechanics of the portal
-        var portal = new Prop(position, false, function(entity){console.log("telepooooort")}, repr('✶'), synced_animations['✶']);
+        var portal = new Prop(position, false, function(entity){game.change_map(second_map,[1,1])}, repr('✶'), synced_animations['✶']);
         return {"terrain":new Floor("·"), "entity" : portal};
     },
     '·': floor('·'),

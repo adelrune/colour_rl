@@ -18,3 +18,25 @@ creatures = {
         }
     }
 }
+
+props = {
+    '↑' : {
+        'moving_platform' : function(position) {
+            var next_action = function(args) {
+                if (!this.has_status("active")) {
+
+                }
+                if(!check_collisions(game.current_map, [0+this.position[0],1+this.position[1]])) {
+                    return this.move({"map":game.current_map, movement:[0,1], move_others:true});
+                } else {
+                    return this.move_delay;
+                }
+            }
+            var default_interaction = function(entity) {
+                this.add_status("active");
+            }
+            var m_p = new Prop(position, false, default_interaction, repr('↑'), undefined, "moving platform", next_action)
+            m_p.move = move_function;
+        }
+    }
+}

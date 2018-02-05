@@ -18,6 +18,7 @@ function GameObject(position, has_collision, has_default_interaction, repr, anim
     // repr this was last seen as
     this.remembered_as = null;
     this.repr = repr;
+    this.status = [];
     this.animation = animation !== undefined ? animation : null;
     if (typeof(this.repr) === "string") {
         // If no colour is set, its white.
@@ -44,6 +45,25 @@ function GameObject(position, has_collision, has_default_interaction, repr, anim
     this.light_passes = function() {
         return ! this.has_collision;
     }
+
+    // asks the question "can the entity pass over this"
+    this.can_pass = function(entity) {
+        return ! this.has_collision;
+    }
+
+    this.has_status = function(status) {
+        return this.status.indexOf(status) !== -1;
+    }
+
+    this.add_status = function(status) {
+        if (this.status.indexOf(status) !== -1)
+            this.status.push(status);
+    }
+
+    this.remove_status = function(status) {
+        remove_from_array(this.status, status);
+    }
+
     // deals with remembered_as and visible.
     this.set_visible = function() {
         this.visible = true;
@@ -162,11 +182,53 @@ function Wall(repr, animation) {
     GameObject.call(this, null, true, false, repr, animation);
 }
 
+function Wall(repr, animation) {
+    GameObject.call(this, null, true, false, repr, animation);
+}
+
+function Void(repr, animation) {
+    GameObject.call(this, null, false, false, repr, animation);
+    this.can_pass = function(entity) {
+        return entity.has_status("flying");
+    }
+}
+
+var move_function = function (args) {
+    // args : movement, map, move_others
+
+    // move_others means it also moves the other non-flying entities at the same position
+    var new_pos = [];
+    for (var i = 0; i < args.movement.length; i++) {
+        new_pos.push(args.movement[i] + this.position[i]);
+    }
+
+    var collided = check_collisions(args.map, new_pos);
+
+    if(collided && collided.has_default_interaction) {
+        return collided.default_interaction(this);
+    } else if (collided) {
+        // collision with non interactable things are only permitted for players.
+        // we don't want to penalise a missinput so we return a null as a sign that nothing should happen
+        return null
+    } else if (args.map.grid[new_pos[0]][new_pos[1]]) {
+        // If this thing moves other to, we set them their new pos.
+        if (args.move_others) {
+            args.map.get_entities_at_position(this.position).forEach(function(entity){
+                entity.position = new_pos;
+            });
+        }
+        // also moves the thing
+        this.position = new_pos;
+    }
+    // 10 arbitrary units of time
+    return this.move_delay;
+}
 // prop is a thing that has infinite health and a default interaction and optionally an action selection function
 function Prop(position, collision, default_interaction, repr, animation, name, action_function) {
     GameObject.call(this, position, collision, true, repr, animation);
     this.default_interaction = default_interaction;
     this.name = name;
+    this.move_delay = 10;
     this.get_next_action = action_function ? action_function : function(args){return 100000000};
     this.health = Infinity;
 }
@@ -178,27 +240,7 @@ function Actor(position, health, repr, name, animation) {
     this.move_delay = 10;
     this.name = name;
     this.persistent_memory = false;
-    this.move = function (args) {
-        // args : movement, map
-        var new_pos = [];
-        for (var i = 0; i < args.movement.length; i++) {
-            new_pos.push(args.movement[i] + this.position[i]);
-        }
-
-        var collided = check_collisions(args.map, new_pos);
-
-        if(collided && collided.has_default_interaction) {
-            return collided.default_interaction(this);
-        } else if (collided) {
-            // collision with non interactable things are only permitted for players.
-            // we don't want to penalise a missinput so we return a null as a sign that nothing should happen
-            return null
-        } else if (args.map.grid[new_pos[0]][new_pos[1]]) {
-            this.position = new_pos;
-        }
-        // 10 arbitrary units of time
-        return this.move_delay;
-    }
+    this.move = move_function;
     this.use_ability = function(args) {
         var ability = make_ability(args);
         return ability.apply(args);

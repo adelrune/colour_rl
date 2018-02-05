@@ -30,8 +30,34 @@ var intro_vaults = [{
         '|······~······|',
         '|······~······|',
         '+—————————————+'
-    ]
+    ],
+    "spawner":function(){};
 }];
+
+var map_2_vaults = [{
+    "map":[
+        '+—————————————+'
+        '|    ··>··    |',
+        '|    ·····    |',
+        '|    ·····    |',
+        '|             |',
+        '|             |',
+        '|             |',
+        '|             |',
+        '|             |',
+        '|             |',
+        '|             |',
+        '|             |',
+        '|             |',
+        '|     ↑↑↑     |',
+        '|    ·····    |',
+        '|    ·····    |',
+        '|    ·····    |',
+        '+—————————————+'
+
+    ],
+    "spawner":function(){};
+}]
 
 // short function for the walls and floors.
 function wall(symbol, animation) {
@@ -43,6 +69,12 @@ function wall(symbol, animation) {
 function floor(symbol, animation) {
     return function() {
         return {"terrain":new Floor(symbol, animation)};
+    }
+}
+
+function chasm(symbol, animation) {
+    return function() {
+        return {"terrain":new Void(symbol, animation)};
     }
 }
 
@@ -75,8 +107,8 @@ var tile_mapping = {
     'ߚ': wall('ߚ', synced_animations['ߚ']),
     'ý': wall('ý', synced_animations['ý']),
     '~': floor('~'),
-    'R': creature('R', 'head_runist')
-
+    'R': creature('R', 'head_runist'),
+    ' ': chasm(' ')
 }
 
 

@@ -34,7 +34,7 @@ function make_round_selection(radius, ignore_walls) {
                 if (game.current_map.get_grid_at_position(pos) &&
                     !obj_in_array(pos, open_tiles) &&
                     euclidian_distance(pos, center) <= radius &&
-                    (ignore_walls || !game.current_map.get_grid_at_position(pos).has_collision)) {
+                    (ignore_walls || !game.current_map.get_grid_at_position(pos).can_pass())) {
                     open_tiles.push(pos);
                 }
             }

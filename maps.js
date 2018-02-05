@@ -14,7 +14,7 @@ function Map(grid, entities) {
     }
 
     this.remove_entity = function(entity) {
-        this.entities.splice(this.entities.indexOf(entity), 1);
+        remove_from_array(this.entities, entity);
         this.scheduler.remove(entity);
     }
 
@@ -130,7 +130,7 @@ function check_collisions(map, new_pos) {
         }
     }
     //Returns the thing it collides with if it collides
-    if (map.grid[new_pos[0]][new_pos[1]].has_collision) {
+    if (!map.grid[new_pos[0]][new_pos[1]].can_pass()) {
         return map.grid[new_pos[0]][new_pos[1]];
     }
     return false;

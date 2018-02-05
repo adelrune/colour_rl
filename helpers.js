@@ -12,6 +12,10 @@ function obj_in_array(object, array) {
     return false;
 }
 
+function remove_from_array(array, thing) {
+    array.splice(array.indexOf(thing), 1);
+}
+
 // The following functions are helpers for working with positions (points)
 // I could have imported a library but no.
 

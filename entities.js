@@ -194,6 +194,10 @@ function Void(repr, animation) {
 }
 
 var move_function = function (args) {
+    // [0,0] is wait
+    if(args.movement[0] == 0 && args.movement[1] == 0) {
+        return this.move_delay;
+    }
     // args : movement, map, move_others
 
     // move_others means it also moves the other non-flying entities at the same position
@@ -202,15 +206,12 @@ var move_function = function (args) {
         new_pos.push(args.movement[i] + this.position[i]);
     }
 
-    var collided = check_collisions(args.map, new_pos);
+    var collided = check_collisions(args.map, new_pos, this);
 
-    if(collided && collided.has_default_interaction) {
-        return collided.default_interaction(this);
-    } else if (collided) {
-        // collision with non interactable things are only permitted for players.
-        // we don't want to penalise a missinput so we return a null as a sign that nothing should happen
-        return null
-    } else if (args.map.grid[new_pos[0]][new_pos[1]]) {
+    var move_delay = (!collided || collided.can_pass(this)) && args.map.grid[new_pos[0]][new_pos[1]] ? this.move_delay : null;
+    var interaction_delay = collided && collided.has_default_interaction ? collided.default_interaction() : null;
+
+    if (move_delay) {
         // If this thing moves other to, we set them their new pos.
         if (args.move_others) {
             args.map.get_entities_at_position(this.position).forEach(function(entity){
@@ -220,8 +221,8 @@ var move_function = function (args) {
         // also moves the thing
         this.position = new_pos;
     }
-    // 10 arbitrary units of time
-    return this.move_delay;
+
+    return move_delay || interaction_delay;
 }
 // prop is a thing that has infinite health and a default interaction and optionally an action selection function
 function Prop(position, collision, default_interaction, repr, animation, name, action_function) {
@@ -255,7 +256,7 @@ function NPC(position, health, repr, name, animation, get_next_action) {
     Actor.call(this, position, health, repr, name, animation);
     this.move_delay = 10;
     this.get_next_action = get_next_action !== undefined ? get_next_action : function() {
-        if(!check_collisions(game.current_map, [1+this.position[0],0+this.position[1]])) {
+        if(!check_collisions(game.current_map, [1+this.position[0],0+this.position[1]], this)) {
             return this.move({"map":game.current_map, movement:[1,0]});
         } else {
             return this.move_delay;

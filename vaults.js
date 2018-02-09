@@ -31,12 +31,12 @@ var intro_vaults = [{
         '|······~······|',
         '+—————————————+'
     ],
-    "spawner":function(){};
+    "spawner":function(){}
 }];
 
 var map_2_vaults = [{
     "map":[
-        '+—————————————+'
+        '+—————————————+',
         '|    ··>··    |',
         '|    ·····    |',
         '|    ·····    |',
@@ -54,10 +54,9 @@ var map_2_vaults = [{
         '|    ·····    |',
         '|    ·····    |',
         '+—————————————+'
-
     ],
-    "spawner":function(){};
-}]
+    "spawner":function(){}
+}];
 
 // short function for the walls and floors.
 function wall(symbol, animation) {
@@ -79,10 +78,10 @@ function chasm(symbol, animation) {
 }
 
 // short function for instanciating creatures at the right place with standard floor under it.
-function creature(symbol, name, floor) {
+function entity(symbol, name, floor) {
     return function(position) {
         floor = floor === undefined ? new Floor('·'): floor
-        return {"terrain":floor, "entity":creatures[symbol][name](position)};
+        return {"terrain":floor, "entity":entities[symbol][name](position)};
     }
 }
 
@@ -97,7 +96,7 @@ var tile_mapping = {
     // magic portal, should probably be something else.
     '✶': function portal(position) {
         // TODO: add the actual teleportation mechanics of the portal
-        var portal = new Prop(position, false, function(entity){game.change_map(second_map,[1,1])}, repr('✶'), synced_animations['✶']);
+        var portal = new Prop(position, false, function(entity){game.change_map(second_map,[7,16])}, repr('✶'), synced_animations['✶']);
         return {"terrain":new Floor("·"), "entity" : portal};
     },
     '·': floor('·'),
@@ -107,8 +106,10 @@ var tile_mapping = {
     'ߚ': wall('ߚ', synced_animations['ߚ']),
     'ý': wall('ý', synced_animations['ý']),
     '~': floor('~'),
-    'R': creature('R', 'head_runist'),
-    ' ': chasm(' ')
+    'R': entity('R', 'head_runist'),
+    ' ': chasm(' '),
+    '>': wall('>'),
+    '↑': entity('↑', 'moving_platform', new Void(' '))
 }
 
 

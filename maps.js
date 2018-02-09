@@ -31,6 +31,9 @@ function Map(grid, entities) {
     // javascriiiiiiiipt
     var that = this;
     this.fov = new ROT.FOV.PreciseShadowcasting(function(x, y) {
+        if(that.grid[x] && that.grid[x][y] && ! that.grid[x][y].light_passes) {
+            console.log(that.grid[x][y])
+        }
         return that.grid[x] && that.grid[x][y] ? that.grid[x][y].light_passes() : false;
     });
 
@@ -122,7 +125,7 @@ function get_layout_from_rot_generator(rot_generator, num_calls) {
     return grid;
 }
 
-function check_collisions(map, new_pos) {
+function check_collisions(map, new_pos, entity) {
     // If something is in the entities list, it takes precedence over map elements.
     for (var i = 0; i < map.entities.length; i++) {
         if(JSON.stringify(new_pos) === JSON.stringify(map.entities[i].position)) {
@@ -130,7 +133,7 @@ function check_collisions(map, new_pos) {
         }
     }
     //Returns the thing it collides with if it collides
-    if (!map.grid[new_pos[0]][new_pos[1]].can_pass()) {
+    if (!map.grid[new_pos[0]][new_pos[1]].can_pass(entity)) {
         return map.grid[new_pos[0]][new_pos[1]];
     }
     return false;
@@ -166,4 +169,25 @@ function generate_first_map() {
     return new Map(grid, entities);
 }
 
-var second_map = new Map(get_layout_from_rot_generator(new ROT.Map.EllerMaze(600,310)));
+
+//lol
+function generate_second_map() {
+    // intro vaults are (for now) full map vaults.
+    var grid = [];
+    var entities = [];
+    var map = map_2_vaults[0]
+
+    for (var j = 0; j < map["map"][0].length; j++) {
+        grid.push([]);
+        for (var i = 0; i < map["map"].length; i++) {
+            objs = get_objects_from_shorthand(map["map"][i].charAt(j), [j,i]);
+            grid[j].push(objs["terrain"]);
+            if (objs["entity"]) {
+                entities.push(objs["entity"]);
+            }
+        }
+    }
+    return new Map(grid, entities);
+}
+
+var second_map = generate_second_map();

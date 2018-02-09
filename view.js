@@ -196,7 +196,7 @@ function view() {
 
     bind_keys = function() {
         // up, down, left, right
-        var keys_to_movement = {"38":[0, -1],"40":[0, 1], "37":[-1, 0], "39":[1, 0]};
+        var keys_to_movement = {"38":[0, -1],"40":[0, 1], "37":[-1, 0], "39":[1, 0], "190":[0, 0]};
         function menu_mode_keys(e) {
             if (keys_to_movement[""+e.keyCode] !== undefined) {
                 game.next_action = {name:"move_menu", args:{"direction": keys_to_movement[""+e.keyCode][1]}}

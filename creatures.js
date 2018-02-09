@@ -1,4 +1,4 @@
-creatures = {
+var entities = {
     'R': {
         'head_runist': function(position) {
             var next_action = function() {
@@ -16,15 +16,12 @@ creatures = {
             h_r.move_delay = 20;
             return h_r;
         }
-    }
-}
-
-props = {
+    },
     '↑' : {
         'moving_platform' : function(position) {
             var next_action = function(args) {
                 if (!this.has_status("active")) {
-
+                    return this.move_delay;
                 }
                 if(!check_collisions(game.current_map, [0+this.position[0],1+this.position[1]])) {
                     return this.move({"map":game.current_map, movement:[0,1], move_others:true});
@@ -34,9 +31,12 @@ props = {
             }
             var default_interaction = function(entity) {
                 this.add_status("active");
+                return entity.move_delay;
             }
             var m_p = new Prop(position, false, default_interaction, repr('↑'), undefined, "moving platform", next_action)
             m_p.move = move_function;
+            console.log(m_p);
+            return m_p;
         }
     }
 }

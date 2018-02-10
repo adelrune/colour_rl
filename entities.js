@@ -5,9 +5,7 @@ function repr(symbol, colour, bg) {
     return {"symbol": symbol, "colour":colour, "bg":bg}
 }
 
-function GameObject(position, has_collision, has_default_interaction, repr, animation) {
-    // Will the player trigger an action by trying to walk in that thing.
-    this.has_default_interaction = has_default_interaction;
+function GameObject(position, has_collision, repr, animation) {
     this.position = position;
     this.has_collision = has_collision;
     // This will generally be false for things that moves a lot
@@ -56,7 +54,7 @@ function GameObject(position, has_collision, has_default_interaction, repr, anim
     }
 
     this.add_status = function(status) {
-        if (this.status.indexOf(status) !== -1)
+        if (this.status.indexOf(status) === -1)
             this.status.push(status);
     }
 
@@ -175,19 +173,19 @@ function make_ability(args) {
 }*/
 
 function Floor(repr, animation) {
-    GameObject.call(this, null, false, false, repr, animation);
+    GameObject.call(this, null, false, repr, animation);
 }
 
 function Wall(repr, animation) {
-    GameObject.call(this, null, true, false, repr, animation);
+    GameObject.call(this, null, true, repr, animation);
 }
 
 function Wall(repr, animation) {
-    GameObject.call(this, null, true, false, repr, animation);
+    GameObject.call(this, null, true, repr, animation);
 }
 
 function Void(repr, animation) {
-    GameObject.call(this, null, false, false, repr, animation);
+    GameObject.call(this, null, false, repr, animation);
     this.can_pass = function(entity) {
         return entity.has_status("flying");
     }
@@ -207,14 +205,15 @@ var move_function = function (args) {
     }
 
     var collided = check_collisions(args.map, new_pos, this);
-
+    console.log(args.map.get_entities_at_position(new_pos));
+    console.log(collided);
     var move_delay = (!collided || collided.can_pass(this)) && args.map.grid[new_pos[0]][new_pos[1]] ? this.move_delay : null;
-    var interaction_delay = collided && collided.has_default_interaction ? collided.default_interaction() : null;
+    var interaction_delay = collided && collided.default_interaction ? collided.default_interaction(this) : null;
 
     if (move_delay) {
         // If this thing moves other to, we set them their new pos.
         if (args.move_others) {
-            args.map.get_entities_at_position(this.position).forEach(function(entity){
+            args.map.get_entities_at_position(this.position).forEach(function(entity) {
                 entity.position = new_pos;
             });
         }
@@ -226,7 +225,7 @@ var move_function = function (args) {
 }
 // prop is a thing that has infinite health and a default interaction and optionally an action selection function
 function Prop(position, collision, default_interaction, repr, animation, name, action_function) {
-    GameObject.call(this, position, collision, true, repr, animation);
+    GameObject.call(this, position, collision, repr, animation);
     this.default_interaction = default_interaction;
     this.name = name;
     this.move_delay = 10;
@@ -236,7 +235,7 @@ function Prop(position, collision, default_interaction, repr, animation, name, a
 
 function Actor(position, health, repr, name, animation) {
     // Actor has collision and default interaction
-    GameObject.call(this, position, true, true, repr, animation);
+    GameObject.call(this, position, true, repr, animation);
     this.health = health;
     this.move_delay = 10;
     this.name = name;

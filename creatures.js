@@ -23,18 +23,29 @@ var entities = {
                 if (!this.has_status("active")) {
                     return this.move_delay;
                 }
-                if(!check_collisions(game.current_map, [0+this.position[0],1+this.position[1]])) {
-                    return this.move({"map":game.current_map, movement:[0,1], move_others:true});
+                // only moves over voids... Should have a better way to handle this.
+                if (game.current_map.grid[this.position[0]][this.position[1] + this.direction].repr.symbol != ' ') {
+                    this.remove_status("active");
+                    this.repr.symbol = this.direction == 1 ? '↑' : '↓';
+                    this.direction = -this.direction;
+                    return this.move_delay;
+                }
+
+                if (!check_collisions(game.current_map, [this.position[0],this.position[1] + this.direction], this)) {
+                    return this.move({"map":game.current_map, movement:[0, this.direction], move_others:true});
                 } else {
                     return this.move_delay;
                 }
             }
             var default_interaction = function(entity) {
                 this.add_status("active");
+                game.message_log.push("The platform starts moving.");
                 return entity.move_delay;
             }
             var m_p = new Prop(position, false, default_interaction, repr('↑'), undefined, "moving platform", next_action)
+            m_p.add_status("flying")
             m_p.move = move_function;
+            m_p.direction = -1;
             console.log(m_p);
             return m_p;
         }

@@ -114,7 +114,6 @@ function create_static_animation(char, colour, bg, frames) {
     bg = bg === undefined : rgb_constants.default_bg;
 
     for (var i = 0; i < frames; i++) {
-        var char = successive_chars[Math.floor(i / frames_per_char)];
         animation_frames.push(repr(char, colour, bg));
     }
     return animation_frames;
@@ -145,14 +144,22 @@ function create_transition_animation(successive_chars, frames_per_char, fg_tints
     return new Animation(create_transition_frames(successive_chars, frames_per_char, fg_tints_array, bg_tints_array, add_reverse_transition), loop);
 }
 
+function get_fade_frames(entity){
+    var frames = {}
+    frames.first_frame = entity.animation.frames[0] || entity.repr;
+    frames.last_frame = entity.animation.frames[entity.animation.frames.length] || entity.repr;
+    frames.fadein_frames = create_transition_animation(first_frame.symbol, 6, [black_colour, first_frame.colour], [black_colour, first_frame.bg]);
+    frames.fadeout_frames = create_transition_animation(last_frame.symbol, 6, [black_colour, last_frame.colour], [black_colour, last_frame.bg]);
+    frames.main_entity_frames = entity.animation === null ? : create_static_animation(entity.repr.symbol, entity.repr.colour, entity.repr.bg, 2 * 60);
+    return frames;
+}
+
 function create_superposition_animation(main_entity, other_entities) {
     if (!other_entities.length) {
         return null;
     }
-    first_frame = main_entity.animation.frames[0] || main_entity.repr;
-    last_frame = main_entity.animation.frames[main_entity.animation.frames.length] || main_entity.repr;
-    fadein_frames = create_transition_animation(first_frame.symbol, 6, [black_colour, first_frame.colour], [black_colour, first_frame.bg]);
-    fadeout_frames = create_transition_animation(last_frame.symbol, 6, [black_colour, last_frame.colour], [black_colour, last_frame.bg]);
+    main_frames = get_fade_frames(main_entity);
+    var other_frames = other_entities.map(get_fade_frames);
 
 }
 

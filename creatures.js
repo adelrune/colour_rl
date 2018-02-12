@@ -17,7 +17,7 @@ var entities = {
             return h_r;
         }
     },
-    '↑' : {
+    '⤊' : {
         'moving_platform' : function(position) {
             var next_action = function(args) {
                 if (!this.has_status("active")) {
@@ -42,11 +42,10 @@ var entities = {
                 game.message_log.push("The platform starts moving.");
                 return entity.move_delay;
             }
-            var m_p = new Prop(position, false, default_interaction, repr('↑'), undefined, "moving platform", next_action)
+            var m_p = new Prop(position, false, default_interaction, repr('⤊'), undefined, "moving platform", next_action)
             m_p.add_status("flying")
             m_p.move = move_function;
             m_p.direction = -1;
-            console.log(m_p);
             return m_p;
         }
     }

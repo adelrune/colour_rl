@@ -1,7 +1,14 @@
 // shorthand constructor for creating reprs. Long form is more readable...
+
+var rgb_constants = {
+    default_bg:[35,35,35],
+    black:[0,0,0],
+    white:[255,255,255]
+}
+
 function repr(symbol, colour, bg) {
-    colour = colour === undefined ? [255,255,255] : colour;
-    bg = bg === undefined ? [35,35,35] : bg;
+    colour = colour === undefined ? rgb_constants.white : colour;
+    bg = bg === undefined ? rgb_constants.default_bg : bg;
     return {"symbol": symbol, "colour":colour, "bg":bg}
 }
 
@@ -15,9 +22,13 @@ function GameObject(position, has_collision, repr, animation) {
     this.selected = false;
     // repr this was last seen as
     this.remembered_as = null;
+    // Entities that are linked to that thing.
+    this.linked_entities = [];
     this.repr = repr;
     this.status = [];
     this.animation = animation !== undefined ? animation : null;
+    // Animation generated when this entity is superposed with others.
+    this.superposition_animation = null;
     if (typeof(this.repr) === "string") {
         // If no colour is set, its white.
         this.repr = {"symbol":this.repr, "colour":[255,255,255], "bg":[35,35,35]}
@@ -27,7 +38,9 @@ function GameObject(position, has_collision, repr, animation) {
     this.next_repr = function() {
         var repr;
         if (this.visible) {
-            repr = this.animation !== null ? this.animation.next() : this.repr;
+            var animation = this.superposition_animation || this.animation;
+            repr = animation !== null ? animation.next() : this.repr;
+
             repr.memory = false;
         } else if (this.remembered_as) {
             repr = this.remembered_as;
@@ -93,8 +106,22 @@ Animation.prototype.next = function() {
     return repr;
 }
 
-// creates a transition animation between chars in a string and between different colours.
-function create_transition_animation(successive_chars, frames_per_char, fg_tints_array, bg_tints_array, add_reverse_transition, loop) {
+
+// TODO : maybe cache this.
+function create_static_animation(char, colour, bg, frames) {
+    var animation_frames = [];
+    colour = colour === undefined : rgb_constants.white;
+    bg = bg === undefined : rgb_constants.default_bg;
+
+    for (var i = 0; i < frames; i++) {
+        var char = successive_chars[Math.floor(i / frames_per_char)];
+        animation_frames.push(repr(char, colour, bg));
+    }
+    return animation_frames;
+}
+
+function create_transition_frames(successive_chars, frames_per_char, fg_tints_array, bg_tints_array, add_reverse_transition) {
+
     var animation_frames = [];
     var animation_len = successive_chars.length * frames_per_char;
     var fg_rainbow = new Rainbow();
@@ -111,7 +138,22 @@ function create_transition_animation(successive_chars, frames_per_char, fg_tints
     if (add_reverse_transition) {
         animation_frames = animation_frames.concat(animation_frames.slice().reverse());
     }
-    return new Animation(animation_frames, loop);
+}
+
+// creates a transition animation between chars in a string and between different colours.
+function create_transition_animation(successive_chars, frames_per_char, fg_tints_array, bg_tints_array, add_reverse_transition, loop) {
+    return new Animation(create_transition_frames(successive_chars, frames_per_char, fg_tints_array, bg_tints_array, add_reverse_transition), loop);
+}
+
+function create_superposition_animation(main_entity, other_entities) {
+    if (!other_entities.length) {
+        return null;
+    }
+    first_frame = main_entity.animation.frames[0] || main_entity.repr;
+    last_frame = main_entity.animation.frames[main_entity.animation.frames.length] || main_entity.repr;
+    fadein_frames = create_transition_animation(first_frame.symbol, 6, [black_colour, first_frame.colour], [black_colour, first_frame.bg]);
+    fadeout_frames = create_transition_animation(last_frame.symbol, 6, [black_colour, last_frame.colour], [black_colour, last_frame.bg]);
+
 }
 
 var Ability = function(base_delay, apply) {
@@ -205,8 +247,6 @@ var move_function = function (args) {
     }
 
     var collided = check_collisions(args.map, new_pos, this);
-    console.log(args.map.get_entities_at_position(new_pos));
-    console.log(collided);
     var move_delay = (!collided || collided.can_pass(this)) && args.map.grid[new_pos[0]][new_pos[1]] ? this.move_delay : null;
     var interaction_delay = collided && collided.default_interaction ? collided.default_interaction(this) : null;
 
@@ -219,6 +259,8 @@ var move_function = function (args) {
         }
         // also moves the thing
         this.position = new_pos;
+        //
+        this.animation = get_entities_at_position(new_pos);
     }
 
     return move_delay || interaction_delay;

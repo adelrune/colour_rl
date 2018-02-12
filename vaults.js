@@ -49,7 +49,7 @@ var map_2_vaults = [{
         '|             |',
         '|             |',
         '|             |',
-        '|     ↑↑↑     |',
+        '|      ⤊      |',
         '|    ·····    |',
         '|    ·····    |',
         '|    ·····    |',
@@ -109,7 +109,7 @@ var tile_mapping = {
     'R': entity('R', 'head_runist'),
     ' ': chasm(' '),
     '>': wall('>'),
-    '↑': entity('↑', 'moving_platform', new Void(' '))
+    '⤊': entity('↑', 'triple_moving_platform', new Void(' '))
 }
 
 

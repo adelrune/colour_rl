@@ -11,6 +11,10 @@ function Map(grid, entities) {
     this.add_entity = function(entity) {
         this.entities.push(entity)
         this.scheduler.add(entity, true);
+        // Also adds any linked entities.
+        for (var i = 0; i < entity.linked_entities.length; i++) {
+            this.add_entity(entity.linked_entities[i]);
+        }
     }
 
     this.remove_entity = function(entity) {

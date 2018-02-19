@@ -17,7 +17,7 @@ var entities = {
             return h_r;
         }
     },
-    '↑' : {
+    '⤊' : {
         'moving_platform' : function(position) {
             var next_action = function(args) {
                 if (!this.has_status("active")) {
@@ -25,9 +25,16 @@ var entities = {
                 }
                 // only moves over voids... Should have a better way to handle this.
                 if (game.current_map.grid[this.position[0]][this.position[1] + this.direction].repr.symbol != ' ') {
-                    this.remove_status("active");
-                    this.repr.symbol = this.direction == 1 ? '↑' : '↓';
-                    this.direction = -this.direction;
+                    this.master.remove_status("active");
+                    // changes status for all the linked platforms.
+                    for (var i = 0; i < this.master.linked_entities.length; i++) {
+                        var that = this.master.linked_entities[i]
+                        that.repr.symbol = that.direction == 1 ? '↑' : '↓';
+                        that.direction = -that.direction;
+                    }
+                    this.master.repr.symbol = that.direction == 1 ? '↑' : '↓';
+                    this.master.direction = -that.direction;
+
                     return this.move_delay;
                 }
 
@@ -38,15 +45,24 @@ var entities = {
                 }
             }
             var default_interaction = function(entity) {
-                this.add_status("active");
+                this.master.add_status("active");
                 game.message_log.push("The platform starts moving.");
                 return entity.move_delay;
             }
-            var m_p = new Prop(position, false, default_interaction, make_repr('↑'), undefined, "moving platform", next_action)
-            m_p.add_status("flying")
-            m_p.move = move_function;
-            m_p.direction = -1;
-            return m_p;
+            var m_m_p = new Prop(position, false, default_interaction, make_repr('↑'), undefined, "moving platform", next_action);
+            var l_p = new Prop([position[0]+1, position[1]], false, default_interaction, make_repr('↑'), undefined, "moving platform", next_action);
+            var r_p = new Prop([position[0]-1, position[1]], false, default_interaction, make_repr('↑'), undefined, "moving platform", next_action);
+            l_p.master = m_m_p;
+            r_p.master = m_m_p;
+            m_m_p.linked_entities = [l_p, r_p];
+            m_m_p.add_status("flying")
+            m_m_p.move = move_function;
+            l_p.move = move_function;
+            r_p.move = move_function;
+            m_m_p.direction = -1;
+            l_p.direction = -1;
+            r_p.direction = -1;
+            return m_m_p;
         }
     }
 }

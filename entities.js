@@ -22,8 +22,11 @@ function GameObject(position, has_collision, repr, animation) {
     this.selected = false;
     // repr this was last seen as
     this.remembered_as = null;
-    // Entities that are linked to that thing.
+    // Entities that are linked to that thing. linked entities are added to the map at the same
+    // the same time as their master entities and their status array change at the same time.
     this.linked_entities = [];
+    // master entity. ==this if the entity is its own master.
+    this.master = this;
     this.repr = repr;
     this.status = [];
     this.animation = animation !== undefined ? animation : null;
@@ -67,12 +70,20 @@ function GameObject(position, has_collision, repr, animation) {
     }
 
     this.add_status = function(status) {
-        if (this.status.indexOf(status) === -1)
+        // also adds status to linked entities
+        if (this.status.indexOf(status) === -1) {
             this.status.push(status);
+            for (var i = 0; i < this.linked_entities.length; i++) {
+                this.linked_entities[i].add_status(status);
+            }
+        }
     }
 
     this.remove_status = function(status) {
         remove_from_array(this.status, status);
+        for (var i = 0; i < this.linked_entities.length; i++) {
+            this.linked_entities[i].remove_status(status);
+        }
     }
 
     // deals with remembered_as and visible.

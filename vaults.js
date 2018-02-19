@@ -49,7 +49,7 @@ var map_2_vaults = [{
         '|             |',
         '|             |',
         '|             |',
-        '|      ⤊      |',
+        '|     ↑↑↑     |',
         '|    ·····    |',
         '|    ·····    |',
         '|    ·····    |',
@@ -96,7 +96,7 @@ var tile_mapping = {
     // magic portal, should probably be something else.
     '✶': function portal(position) {
         // TODO: add the actual teleportation mechanics of the portal
-        var portal = new Prop(position, true, function(entity){game.change_map(second_map,[7,16])}, repr('✶'), synced_animations['✶']);
+        var portal = new Prop(position, true, function(entity){game.change_map(second_map,[7,16])}, make_repr('✶'), synced_animations['✶']);
         return {"terrain":new Floor("·"), "entity" : portal};
     },
     '·': floor('·'),
@@ -109,7 +109,7 @@ var tile_mapping = {
     'R': entity('R', 'head_runist'),
     ' ': chasm(' '),
     '>': wall('>'),
-    '⤊': entity('↑', 'triple_moving_platform', new Void(' '))
+    '↑': entity('↑', 'moving_platform', new Void(' '))
 }
 
 

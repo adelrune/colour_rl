@@ -160,7 +160,7 @@ function view() {
             for (var j = camera_corner[1]; j < camera_corner[1] + camera_size[1]; j++) {
                 // resets dislay
                 // can be false if the map is smaller than the camera
-                if (game.current_map.grid[i] && game.current_map.grid[i][j] && (state_changed || game.current_map.grid[i][j].animation)) {
+                if (game.current_map.grid[i] && game.current_map.grid[i][j] && (state_changed || game.current_map.grid[i][j].animation || game.current_map.grid[i][j].superposition_animation)) {
                     draw_game_object(
                         game.current_map.grid[i][j],
                         i - camera_corner[0] + screen_offset[0],
@@ -171,7 +171,7 @@ function view() {
         }
         // anything else on the map
         for (var i = 0; i < game.current_map.entities.length; i++) {
-            if (position_in_view(game.current_map.entities[i].position) && (state_changed || game.current_map.entities[i].animation)) {
+            if (position_in_view(game.current_map.entities[i].position) && (state_changed || game.current_map.entities[i].animation || game.current_map.entities[i].superposition_animation)) {
                 draw_game_object(
                     game.current_map.entities[i],
                     game.current_map.entities[i].position[0] - camera_corner[0] + screen_offset[0],

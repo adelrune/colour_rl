@@ -10,14 +10,14 @@ var entities = {
                 }
                 return this.move_delay;
             }
-            var h_r = new NPC(position, 300, repr("R"), "Head Runist", undefined, next_action);
+            var h_r = new NPC(position, 300, make_repr("R"), "Head Runist", undefined, next_action);
             h_r.list_of_sentences = ["Today is a great day for <INSERT_NAME_HERE>", "Step through the portal to begin the trial"]
             h_r.sentence_index = 0;
             h_r.move_delay = 20;
             return h_r;
         }
     },
-    '⤊' : {
+    '↑' : {
         'moving_platform' : function(position) {
             var next_action = function(args) {
                 if (!this.has_status("active")) {
@@ -42,7 +42,7 @@ var entities = {
                 game.message_log.push("The platform starts moving.");
                 return entity.move_delay;
             }
-            var m_p = new Prop(position, false, default_interaction, repr('⤊'), undefined, "moving platform", next_action)
+            var m_p = new Prop(position, false, default_interaction, make_repr('↑'), undefined, "moving platform", next_action)
             m_p.add_status("flying")
             m_p.move = move_function;
             m_p.direction = -1;

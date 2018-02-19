@@ -6,10 +6,10 @@ var rgb_constants = {
     white:[255,255,255]
 }
 
-function repr(symbol, colour, bg) {
+function make_repr(symbol, colour, bg) {
     colour = colour === undefined ? rgb_constants.white : colour;
     bg = bg === undefined ? rgb_constants.default_bg : bg;
-    return {"symbol": symbol, "colour":colour, "bg":bg}
+    return {"symbol": symbol, "colour":colour, "bg":bg};
 }
 
 function GameObject(position, has_collision, repr, animation) {
@@ -39,7 +39,7 @@ function GameObject(position, has_collision, repr, animation) {
         var repr;
         if (this.visible) {
             var animation = this.superposition_animation || this.animation;
-            repr = animation !== null ? animation.next() : this.repr;
+            repr = animation ? animation.next() : this.repr;
 
             repr.memory = false;
         } else if (this.remembered_as) {
@@ -110,11 +110,11 @@ Animation.prototype.next = function() {
 // TODO : maybe cache this.
 function create_static_animation(char, colour, bg, frames) {
     var animation_frames = [];
-    colour = colour === undefined : rgb_constants.white;
-    bg = bg === undefined : rgb_constants.default_bg;
+    colour = colour || rgb_constants.white;
+    bg = bg || rgb_constants.default_bg;
 
     for (var i = 0; i < frames; i++) {
-        animation_frames.push(repr(char, colour, bg));
+        animation_frames.push(make_repr(char, colour, bg));
     }
     return animation_frames;
 }
@@ -132,11 +132,12 @@ function create_transition_frames(successive_chars, frames_per_char, fg_tints_ar
 
     for (var i = 0; i < animation_len; i++) {
         var char = successive_chars[Math.floor(i / frames_per_char)];
-        animation_frames.push(repr(char, hex_to_rgb(fg_rainbow.colourAt(i)), hex_to_rgb(bg_rainbow.colourAt(i))));
+        animation_frames.push(make_repr(char, hex_to_rgb(fg_rainbow.colourAt(i)), hex_to_rgb(bg_rainbow.colourAt(i))));
     }
     if (add_reverse_transition) {
         animation_frames = animation_frames.concat(animation_frames.slice().reverse());
     }
+    return animation_frames;
 }
 
 // creates a transition animation between chars in a string and between different colours.
@@ -144,23 +145,41 @@ function create_transition_animation(successive_chars, frames_per_char, fg_tints
     return new Animation(create_transition_frames(successive_chars, frames_per_char, fg_tints_array, bg_tints_array, add_reverse_transition), loop);
 }
 
-function get_fade_frames(entity){
+function get_fade_frames(entity, static, static_len) {
+    // Creates a fadein and a fadout animation for the entities repr. static forces the non animated repr to be
+    // chosen. Static len is the number of frames a static animation should have, default 120 (2 seconds)
+    static_len = static_len || 45;
     var frames = {}
-    frames.first_frame = entity.animation.frames[0] || entity.repr;
-    frames.last_frame = entity.animation.frames[entity.animation.frames.length] || entity.repr;
-    frames.fadein_frames = create_transition_animation(first_frame.symbol, 6, [black_colour, first_frame.colour], [black_colour, first_frame.bg]);
-    frames.fadeout_frames = create_transition_animation(last_frame.symbol, 6, [black_colour, last_frame.colour], [black_colour, last_frame.bg]);
-    frames.main_entity_frames = entity.animation === null ? : create_static_animation(entity.repr.symbol, entity.repr.colour, entity.repr.bg, 2 * 60);
+    var first_frame = entity.animation ? entity.animation.frames[0] : entity.repr;
+    var last_frame = entity.animation ? entity.animation.frames[entity.animation.frames.length] : entity.repr;
+    frames.fadein_frames = create_transition_frames(first_frame.symbol, 15, [rgb_constants.black_colour, first_frame.colour], [rgb_constants.default_bg, first_frame.bg]);
+    frames.fadeout_frames = create_transition_frames(last_frame.symbol, 15, [last_frame.colour, rgb_constants.black_colour], [last_frame.bg, rgb_constants.default_bg]);
+    console.log(frames.fadein_frames);
+    console.log(frames.fadeout_frames);
+
+    // Either gets the entity's animation or create a static one.
+    frames.main_entity_frames = entity.animation === null || static ? create_transition_frames(entity.repr.symbol, static_len, [entity.repr.colour, entity.repr.colour], [entity.repr.bg,entity.repr.bg]) : entity.animation;
+
     return frames;
 }
 
 function create_superposition_animation(main_entity, other_entities) {
+    // Creates a superposition animation with the main_entity keeping its original animation or a two second static one and
+    // the other entities get a static animation with their repr for 1 sec.
     if (!other_entities.length) {
         return null;
     }
-    main_frames = get_fade_frames(main_entity);
-    var other_frames = other_entities.map(get_fade_frames);
+    var frames = [];
+    var main_frames = get_fade_frames(main_entity);
+    frames = frames.concat(main_frames.main_entity_frames, main_frames.fadeout_frames);
 
+    for (var i = 0; i < other_entities.length; i++) {
+        ent_frames = get_fade_frames(other_entities[i], true, 25);
+        frames = frames.concat(ent_frames.fadein_frames, ent_frames.main_entity_frames, ent_frames.fadeout_frames);
+    }
+    // Adds the fadein at the end so that there is no fadein at animation start.
+    frames = frames.concat(main_frames.fadein_frames);
+    return new Animation(frames, true);
 }
 
 var Ability = function(base_delay, apply) {
@@ -256,18 +275,24 @@ var move_function = function (args) {
     var collided = check_collisions(args.map, new_pos, this);
     var move_delay = (!collided || collided.can_pass(this)) && args.map.grid[new_pos[0]][new_pos[1]] ? this.move_delay : null;
     var interaction_delay = collided && collided.default_interaction ? collided.default_interaction(this) : null;
-
+    console.log(move_delay);
     if (move_delay) {
+
+        // Other entities
+        var other_entities = args.map.get_entities_at_position(new_pos);
         // If this thing moves other to, we set them their new pos.
         if (args.move_others) {
             args.map.get_entities_at_position(this.position).forEach(function(entity) {
                 entity.position = new_pos;
             });
         }
+
         // also moves the thing
         this.position = new_pos;
-        //
-        this.animation = get_entities_at_position(new_pos);
+        if (this == game.player) {
+            this.superposition_animation = create_superposition_animation(this, other_entities);
+        }
+        // Sets a correct superposition animation (either null for no superposition or the right animation).
     }
 
     return move_delay || interaction_delay;

@@ -270,11 +270,15 @@ function Void(repr, animation) {
     }
 }
 
+var update_superposition_animation = function () {
+
+}
+
 var move_function = function (args) {
     // [0,0] is wait
-    if(args.movement[0] == 0 && args.movement[1] == 0) {
+    /*if(args.movement[0] == 0 && args.movement[1] == 0) {
         return this.move_delay;
-    }
+    }*/
     // args : movement, map, move_others
 
     // move_others means it also moves the other non-flying entities at the same position
@@ -289,8 +293,10 @@ var move_function = function (args) {
     console.log(move_delay);
     if (move_delay) {
 
-        // Other entities
+        // Other entities at the new position.
         var other_entities = args.map.get_entities_at_position(new_pos);
+        // Needs to remove self so that
+        remove_from_array(other_entities, this);
         // If this thing moves other to, we set them their new pos.
         if (args.move_others) {
             args.map.get_entities_at_position(this.position).forEach(function(entity) {
@@ -300,8 +306,14 @@ var move_function = function (args) {
 
         // also moves the thing
         this.position = new_pos;
-        if (this == game.player) {
-            this.superposition_animation = create_superposition_animation(this, other_entities);
+        // Creates an appropriate superposition animation for everybody involved.
+        this.superposition_animation = create_superposition_animation(this, other_entities);
+        for (var i = 0; i < other_entities.length; i++) {
+            // slice is a shallow copy
+            var others = other_entities.slice()
+            remove_from_array(others, other_entities[i]);
+            others.push(this);
+            other_entities[i].superposition_animation = create_superposition_animation(other_entities[i], others);
         }
         // Sets a correct superposition animation (either null for no superposition or the right animation).
     }

@@ -234,4 +234,4 @@ function game_loop() {
 
 game.init();
 
-setInterval(game_loop, 14);
+setInterval(game_loop, 1);

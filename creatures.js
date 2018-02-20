@@ -28,12 +28,12 @@ var entities = {
                     this.master.remove_status("active");
                     // changes status for all the linked platforms.
                     for (var i = 0; i < this.master.linked_entities.length; i++) {
-                        var that = this.master.linked_entities[i]
+                        var that = this.master.linked_entities[i];
                         that.repr.symbol = that.direction == 1 ? '↑' : '↓';
                         that.direction = -that.direction;
                     }
-                    this.master.repr.symbol = that.direction == 1 ? '↑' : '↓';
-                    this.master.direction = -that.direction;
+                    this.master.repr.symbol = this.master.direction == 1 ? '↑' : '↓';
+                    this.master.direction = -this.master.direction;
 
                     return this.move_delay;
                 }

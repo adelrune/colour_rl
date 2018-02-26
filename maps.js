@@ -102,6 +102,7 @@ function Map(grid, entities) {
                     this.entities[i].set_visible();
                 }
                 this.entities[i].selected = square.selected;
+                this.entities[i].update_superposition_animation(this);
             } else {
                 game.message_log.push(this.entities[i].name + " dies");
                 this.scheduler.remove(this.entities[i]);

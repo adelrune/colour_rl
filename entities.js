@@ -165,8 +165,6 @@ function get_fade_frames(entity, static, static_len) {
     var last_frame = entity.animation ? entity.animation.frames[entity.animation.frames.length] : entity.repr;
     frames.fadein_frames = create_transition_frames(first_frame.symbol, 15, [rgb_constants.black_colour, first_frame.colour], [rgb_constants.default_bg, first_frame.bg]);
     frames.fadeout_frames = create_transition_frames(last_frame.symbol, 15, [last_frame.colour, rgb_constants.black_colour], [last_frame.bg, rgb_constants.default_bg]);
-    console.log(frames.fadein_frames);
-    console.log(frames.fadeout_frames);
 
     // Either gets the entity's animation or create a static one.
     frames.main_entity_frames = entity.animation === null || static ? create_transition_frames(entity.repr.symbol, static_len, [entity.repr.colour, entity.repr.colour], [entity.repr.bg,entity.repr.bg]) : entity.animation;
@@ -174,6 +172,7 @@ function get_fade_frames(entity, static, static_len) {
     return frames;
 }
 
+// probably need to cache this eventually.
 function create_superposition_animation(main_entity, other_entities) {
     // Creates a superposition animation with the main_entity keeping its original animation or a two second static one and
     // the other entities get a static animation with their repr for 1 sec.
@@ -270,8 +269,13 @@ function Void(repr, animation) {
     }
 }
 
-var update_superposition_animation = function () {
-
+var update_superposition_animation = function (map) {
+    // Other entities at the same position.
+    var other_entities = map.get_entities_at_position(this.position);
+    // Needs to remove self so that
+    remove_from_array(other_entities, this);
+    // Creates an appropriate superposition animation for everybody involved.
+    this.superposition_animation = create_superposition_animation(this, other_entities);
 }
 
 var move_function = function (args) {
@@ -293,29 +297,14 @@ var move_function = function (args) {
     console.log(move_delay);
     if (move_delay) {
 
-        // Other entities at the new position.
-        var other_entities = args.map.get_entities_at_position(new_pos);
-        // Needs to remove self so that
-        remove_from_array(other_entities, this);
         // If this thing moves other to, we set them their new pos.
         if (args.move_others) {
             args.map.get_entities_at_position(this.position).forEach(function(entity) {
                 entity.position = new_pos;
             });
         }
-
         // also moves the thing
         this.position = new_pos;
-        // Creates an appropriate superposition animation for everybody involved.
-        this.superposition_animation = create_superposition_animation(this, other_entities);
-        for (var i = 0; i < other_entities.length; i++) {
-            // slice is a shallow copy
-            var others = other_entities.slice()
-            remove_from_array(others, other_entities[i]);
-            others.push(this);
-            other_entities[i].superposition_animation = create_superposition_animation(other_entities[i], others);
-        }
-        // Sets a correct superposition animation (either null for no superposition or the right animation).
     }
 
     return move_delay || interaction_delay;
@@ -328,6 +317,7 @@ function Prop(position, collision, default_interaction, repr, animation, name, a
     this.move_delay = 10;
     this.get_next_action = action_function ? action_function : function(args){return 100000000};
     this.health = Infinity;
+    this.update_superposition_animation = update_superposition_animation;
 }
 
 function Actor(position, health, repr, name, animation) {
@@ -338,6 +328,7 @@ function Actor(position, health, repr, name, animation) {
     this.name = name;
     this.persistent_memory = false;
     this.move = move_function;
+    this.update_superposition_animation = update_superposition_animation;
     this.use_ability = function(args) {
         var ability = make_ability(args);
         return ability.apply(args);

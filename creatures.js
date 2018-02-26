@@ -45,8 +45,10 @@ var entities = {
                 }
             }
             var default_interaction = function(entity) {
-                this.master.add_status("active");
-                game.message_log.push("The platform starts moving.");
+                if (! this.has_status("active")) {
+                    game.message_log.push("The platform starts moving.");
+                    this.master.add_status("active");
+                }
                 return entity.move_delay;
             }
             var m_m_p = new Prop(position, false, default_interaction, make_repr('↑'), undefined, "moving platform", next_action);

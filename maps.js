@@ -112,24 +112,6 @@ function Map(grid, entities) {
     }
 }
 
-function get_layout_from_rot_generator(rot_generator, num_calls) {
-    var num_calls = num_calls === undefined ? 1 : num_calls;
-    var grid = [];
-    for (var i = 0 ; i < rot_generator._width; i++) {
-        grid.push([]);
-    }
-    for (var i = 0; i < num_calls; i++) {
-        rot_generator.create(function(x, y, wall) {
-            if(wall) {
-                grid[x][y] = new Wall("#");
-            } else {
-                grid[x][y] = new Floor("·");
-            }
-        });
-    }
-    return grid;
-}
-
 function check_collisions(map, new_pos, entity) {
     // If something is in the entities list, it takes precedence over map elements.
     for (var i = 0; i < map.entities.length; i++) {

@@ -3,6 +3,9 @@
 // A vault consists of terrain/entities that are shortcoded in only ascii (may need a theme system for coloring/tiling different levels)
 // a spawner function that dictates what additional entities are immediately present at vault generation (for when
 // and an item layer ?
+
+// Idea : reserved characters to show where the vault needs to be connected to the rest of the map (door, whatever other thing)...
+
 var intro_vaults = [{
     "map":[
         '+—————————————+',
@@ -88,7 +91,7 @@ function entity(symbol, name, floor) {
 // If the animations needs to be shared, they can be preinstanciated here.
 var synced_animations = {
     '✶': create_transition_animation("✶✷✹✸✺", 10, [[255,0,255], [255,255,0], [0,255,0], [0,255,255], [0,0,255]].reverse(), [[35,35,35], [0,0,170], [45,45,255]], true, true),
-    'ߚ': create_transition_animation("ߚ", 50, [[255,255,255],[255,255,255]], [[35,35,35], [0,0,170], [45,45,255]], true, true),
+    'ߚ': create_transition_animation("ߚ", 50, [[255,255,255],[255,255,255]], [[35,35,35], [170,0,0], [255,45,45]], true, true),
     'ý': create_transition_animation("ý", 50, [[255,255,255],[255,255,255]], [[35,35,35], [0,0,170], [45,45,255]], true, true)
 }
 // this is the mapping from a simple character to an object {'terrain':terrain, 'entity':entity}.
@@ -113,7 +116,7 @@ var tile_mapping = {
 }
 
 
-// This function returns the objects genrated by the map shorthand
+// This function returns the objects genrated by the map shorthand. Should have a "style" parameter to coerce default floor and walls to the floor style.
 function get_objects_from_shorthand(symbol, position) {
     return tile_mapping[symbol](position);
 }

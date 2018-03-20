@@ -39,7 +39,7 @@ function fill_with(grid, fill, start_pos, stop_pos) {
 }
 
 function fill_from_vaults() {
-    // intro vaults are (for now) full map vaults.
+    // This function should
     var grid = [];
     var entities = [];
     var map = intro_vaults[0]
@@ -57,6 +57,23 @@ function fill_from_vaults() {
     }
     return new Map(grid, entities);
 }
+
+
+/* algorithm:
+Basic rooms :
+
+Start with full walls
+fill_from_vaults (which should have indications as to where the exits/entries are
+dig_rooms (for things that aren't vaults. should maybe have many room kinds)
+create corridor between rooms.
+
+fancy stuff:
+
+platform puzzle room : Create rooms with a pattern of moving platforms to get to the other end. Maybe with a thing in the middle that snipes you.
+
+teleporter rooms : twin rooms with a portal between them.
+
+*/
 
 function create_floor(size, args) {
     // args is going to contain a shitton of stuff.
